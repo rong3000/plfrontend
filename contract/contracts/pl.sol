@@ -47,7 +47,10 @@ contract PL is ERC721A, Ownable, ContextMixin, PullPayment {
         _;
     }
 
-    function wlMint(uint256 quantity) external payable callerIsUser{
+    mapping(address => mapping(uint256 => uint256)) private _mintedTokens;
+    mapping(uint256 => uint256) private _mintedTokensIndex;
+
+    function wlMint(uint256 quantity) external payable callerIsUser {
         // _safeMint's second argument now takes in a quantity, not a tokenId.
         require(
             quantity + _numberMinted(msg.sender) <= MAX_MINTS,
@@ -60,9 +63,25 @@ contract PL is ERC721A, Ownable, ContextMixin, PullPayment {
         require(msg.value >= (wlMintRate * quantity), "Not enough ether sent");
         _safeMint(msg.sender, quantity);
         emit Minted(totalSupply(), msg.sender);
+
+        // uint256 length = _addressData[msg.sender].numberMinted;
+        uint256 length = _numberMinted(msg.sender);
+
+        for (uint256 i = quantity; i > 0; i--) {
+            _mintedTokens[msg.sender][length - i] = (totalSupply() - i);
+            // _mintedTokensIndex[totalSupply - 1] = length;
+        }
     }
 
-    function mint(uint256 quantity) external payable callerIsUser{
+    function mintedTokenOfOwnerByIndex(address owner, uint256 index)
+        public
+        view
+        returns (uint256)
+    {
+        return _mintedTokens[owner][index];
+    }
+
+    function mint(uint256 quantity) external payable callerIsUser {
         // _safeMint's second argument now takes in a quantity, not a tokenId.
         require(
             quantity + _numberMinted(msg.sender) <= MAX_MINTS,
@@ -75,6 +94,14 @@ contract PL is ERC721A, Ownable, ContextMixin, PullPayment {
         require(msg.value >= (mintRate * quantity), "Not enough ether sent");
         _safeMint(msg.sender, quantity);
         emit Minted(totalSupply(), msg.sender);
+        // uint256 length = _addressData[msg.sender].numberMinted;
+        uint256 length = _numberMinted(msg.sender);
+
+        for (uint256 i = quantity; i > 0; i--) {
+            _mintedTokens[msg.sender][length - i] = (totalSupply() - i);
+            // _mintedTokensIndex[totalSupply - 1] = length;
+        }
+
     }
 
     function _baseURI() internal view override returns (string memory) {
