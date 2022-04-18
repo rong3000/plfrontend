@@ -1,31 +1,25 @@
 /**
- * @type import('hardhat/config').HardhatUserConfig
- */
+* @type import('hardhat/config').HardhatUserConfig
+*/
 
-require("@nomiclabs/hardhat-waffle");
-require("@nomiclabs/hardhat-etherscan");
-require("hardhat-gas-reporter");
+require('dotenv').config();
+require("@nomiclabs/hardhat-ethers");
 
-const pk = process.env.dapk
+const { ALCHEMY_KEY, ACCOUNT_PRIVATE_KEY } = process.env;
 
 module.exports = {
-  solidity: "0.8.4",
-  networks: {
-    hardhat: {
-      chainId: 1337
-    },
+   solidity: "0.8.4",
+   defaultNetwork: "rinkeby",
+   networks: {
+    hardhat: {},
     rinkeby: {
-      url: "https://rinkeby.infura.io/v3/5707a1c75350408cb408cba40175e252",
-      accounts: [`0x${pk}`]
+      url: `https://eth-rinkeby.alchemyapi.io/v2/${ALCHEMY_KEY}`,
+      accounts: [`0x${ACCOUNT_PRIVATE_KEY}`]
     },
-    mainnet: {
-      url: "https://mainnet.infura.io/v3/5707a1c75350408cb408cba40175e252",
-      accounts: [`0x${pk}`],
-    }
+    ethereum: {
+      chainId: 1,
+      url: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`,
+      accounts: [`0x${ACCOUNT_PRIVATE_KEY}`]
+    },
   },
-  etherscan: {
-    // Your API key for Etherscan
-    // Obtain one at https://etherscan.io/
-    apiKey: process.env.ETHERSCAN_API_KEY
-  },
-};
+}

@@ -1,164 +1,105 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "erc721a/contracts/ERC721A.sol";
+import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Burnable.sol";
+import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts/security/PullPayment.sol";
+import "./ERC1155URIStorage.sol";
 
-/**
- * https://github.com/maticnetwork/pos-portal/blob/master/contracts/common/ContextMixin.sol
- */
-abstract contract ContextMixin {
-    function msgSender() internal view returns (address payable sender) {
-        if (msg.sender == address(this)) {
-            bytes memory array = msg.data;
-            uint256 index = msg.data.length;
-            assembly {
-                // Load the 32 bytes word from memory with the address on the lower 20 bytes, and mask those.
-                sender := and(
-                    mload(add(array, index)),
-                    0xffffffffffffffffffffffffffffffffffffffff
-                )
-            }
-        } else {
-            sender = payable(msg.sender);
-        }
-        return sender;
-    }
-}
-
-contract PL is ERC721A, Ownable, ContextMixin, PullPayment {
+contract PL1155 is ERC1155, Ownable, Pausable, ERC1155Burnable, ERC1155Supply, ERC1155URIStorage {
     using SafeMath for uint256;
 
-    uint256 MAX_MINTS = 3;
-    uint256 MAX_TOKENS = 10002;
-    uint256 public wlMintRate = 0.025 ether;
-    uint256 public mintRate = 0.05 ether;
+    uint256 public MAX_MINTS = 204800;
+    address proxyAddress = 0xF57B2c51dED3A29e6891aba85459d600256Cf317;
 
-    string public baseURI = "https://metapython.herokuapp.com/api/box/";
+    event Minted(address to, uint256 tokenId, uint256 amount);
+    event MintedBatch(address to, uint256[] ids, uint256[] amounts);
 
-    event Minted(uint256 tokenId, address minter); //minter?
+    constructor() ERC1155("https://metapython.herokuapp.com/api/box/") {}
 
-    constructor() ERC721A("P L", "pl") {}
-
-    modifier callerIsUser() {
-        require(tx.origin == msg.sender, "The caller is another contract");
-        _;
+    function setURI(string memory newuri) public onlyOwner {
+        _setURI(newuri);
     }
 
-    mapping(address => mapping(uint256 => uint256)) private _mintedTokens;
-    mapping(uint256 => uint256) private _mintedTokensIndex;
-
-    function wlMint(uint256 quantity) external payable callerIsUser {
-        // _safeMint's second argument now takes in a quantity, not a tokenId.
-        require(
-            quantity + _numberMinted(msg.sender) <= MAX_MINTS,
-            "Exceeded the limit"
-        );
-        require(
-            totalSupply() + quantity <= MAX_TOKENS,
-            "Not enough tokens left"
-        );
-        require(msg.value >= (wlMintRate * quantity), "Not enough ether sent");
-        _safeMint(msg.sender, quantity);
-        emit Minted(totalSupply(), msg.sender);
-
-        // uint256 length = _addressData[msg.sender].numberMinted;
-        uint256 length = _numberMinted(msg.sender);
-
-        for (uint256 i = quantity; i > 0; i--) {
-            _mintedTokens[msg.sender][length - i] = (totalSupply() - i);
-            // _mintedTokensIndex[totalSupply - 1] = length;
-        }
+    function setProxy(address _proxyAddress) public onlyOwner {
+        proxyAddress = _proxyAddress;
     }
 
-    function mintedTokenOfOwnerByIndex(address owner, uint256 index)
-        public
-        view
-        returns (uint256)
-    {
-        return _mintedTokens[owner][index];
+    // function getProxy() public view onlyOwner returns (address) {
+    //     return proxyAddress;
+    // }
+
+    function setMaxMints(uint256 max_mints) public onlyOwner {
+        MAX_MINTS = max_mints;
     }
 
-    function mint(uint256 quantity) external payable callerIsUser {
-        // _safeMint's second argument now takes in a quantity, not a tokenId.
-        require(
-            quantity + _numberMinted(msg.sender) <= MAX_MINTS,
-            "Exceeded the limit"
-        );
-        require(
-            totalSupply() + quantity <= MAX_TOKENS,
-            "Not enough tokens left"
-        );
-        require(msg.value >= (mintRate * quantity), "Not enough ether sent");
-        _safeMint(msg.sender, quantity);
-        emit Minted(totalSupply(), msg.sender);
-        // uint256 length = _addressData[msg.sender].numberMinted;
-        uint256 length = _numberMinted(msg.sender);
-
-        for (uint256 i = quantity; i > 0; i--) {
-            _mintedTokens[msg.sender][length - i] = (totalSupply() - i);
-            // _mintedTokensIndex[totalSupply - 1] = length;
-        }
-
+    function pause() public onlyOwner {
+        _pause();
     }
 
-    function _baseURI() internal view override returns (string memory) {
-        return baseURI;
+    function unpause() public onlyOwner {
+        _unpause();
     }
 
-    function setMAX_MINTS(uint256 _maxMints) public onlyOwner {
-        MAX_MINTS = _maxMints;
+    function mint(
+        address account,
+        uint256 id,
+        uint256 amount,
+        bytes memory data
+    ) public onlyOwner {
+        _mint(account, id, amount, data);
+        emit Minted(account, id, amount);
     }
 
-    function setMAX_TOKENS(uint256 _maxTokens) public onlyOwner {
-        MAX_TOKENS = _maxTokens;
+    function mintBatch(
+        address to,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data
+    ) public onlyOwner {
+        _mintBatch(to, ids, amounts, data);
+        emit MintedBatch(to, ids, amounts);
     }
 
-    function setWlMintRate(uint256 _wlMintRate) public onlyOwner {
-        wlMintRate = _wlMintRate;
+    function _beforeTokenTransfer(
+        address operator,
+        address from,
+        address to,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data
+    ) internal override(ERC1155, ERC1155Supply) whenNotPaused {
+        super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
     }
 
-    function setmintRate(uint256 _mintRate) public onlyOwner {
-        mintRate = _mintRate;
-    }
-
-    /// @dev Sets the base token URI prefix.
-    function setBaseURI(string memory _baseTokenURI) public onlyOwner {
-        baseURI = _baseTokenURI;
-    }
-
-    /// @dev Overridden in order to make it an onlyOwner function
-    function withdrawPayments(address payable payee)
-        public
-        virtual
-        override
-        onlyOwner
-    {
-        super.withdrawPayments(payee);
-    }
-
-    //warning, proxy address to be updated
     function isApprovedForAll(address _owner, address _operator)
         public
         view
         override
         returns (bool isOperator)
     {
-        // if OpenSea's ERC721 Proxy Address is detected, auto-return true
-        if (_operator == address(0x58807baD0B376efc12F5AD86aAc70E78ed67deaE)) {
+        // if OpenSea's ERC1155 Proxy Address is detected, auto-return true
+        if (_operator == address(proxyAddress)) {
             return true;
         }
 
-        // otherwise, use the default ERC721A.isApprovedForAll()
-        return ERC721A.isApprovedForAll(_owner, _operator);
+        // otherwise, use the default ERC721.isApprovedForAll()
+        return ERC1155.isApprovedForAll(_owner, _operator);
     }
 
-    /**
-     * This is used instead of msg.sender as transactions won't be sent by the original token owner, but by OpenSea.
-     */
-    function _msgSender() internal view override returns (address sender) {
-        return ContextMixin.msgSender();
+    function uri(uint256 tokenId)
+        public
+        view
+        override(ERC1155, ERC1155URIStorage)
+        returns (string memory)
+    {
+        return super.uri(tokenId);
+    }
+
+    function setTokenURI(uint256 tokenId, string memory _tokenURI) public onlyOwner {
+        _setTokenURI(tokenId, _tokenURI);
     }
 }

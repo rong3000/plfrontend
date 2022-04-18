@@ -1,20 +1,19 @@
 <script>
   import { ethers } from "ethers";
   import { onMount } from "svelte";
-  import Contract from "./PL.json";
+  import Contract from "./PL1155.json";
+  import { getOwned, sayHi, sayBye } from "./getOwned";
 
   // const CONTRACT_ID = "0x26c1a3Bca442fe4517437d139779bf1cc153EecB";
   // const CONTRACT_ID = "0xF8bB3f6e2502325B21E7abD98f3132a022C9B260";
-  const CONTRACT_ID = "0xc4a805Feb788010EDdD940D9B88F7C08723AD101";
+  // const CONTRACT_ID = "0xc4a805Feb788010EDdD940D9B88F7C08723AD101";
+  const CONTRACT_ID = "0x30fD288439231Bf31C6f73562496112773CEcDC0";
 
-  
-
-  
   const ethereum = window.ethereum;
 
   let chain, provider, signer, contract, contractWithSigner;
 
-  let maxTokens = -1;
+  let maxMints = -1;
   let currentMinted = -1;
   let account = null;
   let minted = false;
@@ -22,9 +21,12 @@
   let quantity = 1;
   let ownedTokens = [];
   let recentlyMintedTokens = [];
+  let openseaContractLink = 'https://testnets.opensea.io/assets/0x290422ec6eadc2cc12acd98c50333720382ca86b/'
+  // let accounts = [];
 
   onMount(() => {
     chain = window.ethereum.networkVersion;
+    console.log("--------------minted", minted);
   });
 
   // If Metamask is installed
@@ -37,6 +39,7 @@
 
     ethereum.on("accountsChanged", function (accounts) {
       account = accounts[0];
+      window.location.reload();
     });
 
     ethereum.on("chainChanged", function () {
@@ -67,64 +70,86 @@
     init();
   }
 
+  // async function disconnect() {
+  //   accounts[0] = null;
+  //   alert('ha');
+  //   account = null;
+  //   alert('ha');
+  //   init();
+  // }
+
   async function mint() {
-    await contractWithSigner.mintToken(quantity, account);
+    await contractWithSigner.mint(account, 1, quantity, "0x00");
     loading = true;
-    contractWithSigner.on("Minted", (from, to, amount, event) => {
+    contractWithSigner.on("Minted", (to, tokenId, amount, event) => {
       minted = true;
       loading = false;
-      currentMinted += 1;
+      currentMinted += amount;
     });
   }
 
   async function findCurrentOwned() {
-    const numberOfTokensOwned = await contract.balanceOf(account);
-    console.log("numberOfTokensMinted", numberOfTokensOwned);
-    for (let i = 0; i < Number(numberOfTokensOwned); i++) {
-      console.log(account, i);
-      const token = await contract.mintedTokenOfOwnerByIndex(account, i);
-      console.log('token', token);
-      const URI = await contract.tokenURI(token);
-      let response;
-      try {
-        response = await fetch("https://sheltered-beach-35853.herokuapp.com/" + URI);
-        // response = await fetch(URI);
-      } catch (error) {
-        console.log(error);
-      }
+    const numberOfTokensOwned = await contract.balanceOf(account, 1);
+    console.log("numberOfTokensMinted", numberOfTokensOwned.toNumber());
+    // for (let i = 0; i < Number(numberOfTokensOwned); i++) {
 
-      const result = await response.json();
-      result.id = token;
+    const ownedToken = await getOwned(contract, account);
+    console.log("ownedToken is: ", ownedToken);
 
-      ownedTokens.push(result);
+    // const token = await contract.mintedTokenOfOwnerByIndex(account, i);
+    const URI = await contract.uri(ownedToken[0].id);
+    const mergedURI = URI.slice(0, -4) + ownedToken[0].id;
+    console.log("URI is ", mergedURI);
+    let response;
+    try {
+      response = await fetch(
+        "https://sheltered-beach-35853.herokuapp.com/" + mergedURI
+      );
+      // response = await fetch(URI);
+    } catch (error) {
+      console.log(error);
     }
+
+    const result = await response.json();
+    result.id = ownedToken[0].id;
+
+    ownedTokens.push(result);
+    // }
     ownedTokens = ownedTokens;
   }
 
   async function findCurrentMinted() {
-    const total = await contract.MAX_TOKENS();
-    const supply = await contract.totalSupply();
+    const total = await contract.MAX_MINTS();
+    sayHi("uri");
+    const ownedToken = await getOwned(contract, account);
+    console.log("ownedToken is: ", ownedToken);
+    const supply = await contract.totalSupply(1);
 
-    maxTokens = Number(total);
+    maxMints = Number(total);
     currentMinted = Number(supply);
   }
 
   async function fetchRecentlyMinted() {
     let recentMintEvents = await contract.queryFilter({
       topics: [
-        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+        "0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62",
       ],
     });
 
     recentMintEvents = recentMintEvents.slice(-3);
 
     await recentMintEvents.map(async (MintEvent) => {
-      const token = MintEvent.args.tokenId;
-      const URI = await contract.tokenURI(token);
-      console.log('URIURIURIURIURIURIURIURIURIURIURIURIURIURIURIURIURI', URI);
+      const token = MintEvent.args.id;
+      console.log("token id is ", token);
+      const URI = await contract.uri(token);
+      const mergedURI = URI.slice(0, -4) + token.toNumber();
+      console.log("URI is ", mergedURI);
+
       let response;
       try {
-        response = await fetch("https://sheltered-beach-35853.herokuapp.com/" + URI);
+        response = await fetch(
+          "https://sheltered-beach-35853.herokuapp.com/" + mergedURI
+        );
         // response = await fetch(URI);
       } catch (error) {
         console.log(error);
@@ -189,7 +214,7 @@
           bind:value={quantity}
         />
 
-        {#if currentMinted >= maxTokens}
+        {#if currentMinted >= maxMints}
           <button disabled type="submit">Sold out</button>
         {:else}
           <button type="submit">Mint</button>
@@ -197,7 +222,7 @@
       </form>
 
       <section>
-        <span>{currentMinted}/2048 minted</span>
+        <span>{currentMinted} / {maxMints} minted</span>
       </section>
 
       <h2>Your Tokens:</h2>
@@ -208,7 +233,7 @@
               <li>
                 <div class="grid-image">
                   <a
-                    href={`https://testnets.opensea.io/assets/0x290422ec6eadc2cc12acd98c50333720382ca86b/${token.id}`}
+                    href={`${openseaContractLink}${token.id}`}
                   >
                     <img src={token.image} alt={token.description} />
                   </a>
