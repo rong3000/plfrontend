@@ -27,6 +27,7 @@
   let tokenSymbol = "PL";
   let selected = false;
   let childNFTs = {};
+  let childNFTarray = new Set();
   // let accounts = [];
   function toggle(event) {
     // selected =!selected;
@@ -45,6 +46,12 @@
     //   event.currentTarget.id
     // );
     console.log("childNFTs", childNFTs);
+    if (childNFTs[event.currentTarget.id]) {
+      childNFTarray.add(event.currentTarget.id);
+    } else if (!childNFTs[event.currentTarget.id]) {
+      childNFTarray.delete(event.currentTarget.id);
+    }
+    console.log("childNFTarray", ...childNFTarray);
   }
 
   onMount(() => {
@@ -108,18 +115,24 @@
       minted = true;
       loading = false;
       console.log("amount", amount.toNumber());
-      currentMinted += amount.toNumber();
+      findCurrentMinted();
     });
   }
 
   async function forge() {
-    await contractWithSigner.mint(account, 1, quantity, "0x00");
+    await contractWithSigner.burnBatch(
+      account,
+      Array.from(childNFTarray),
+      [1, 1]
+    );
+
+    await contractWithSigner.mint(account, 33445, 1, "0x00");
     loading = true;
     contractWithSigner.on("Minted", (to, tokenId, amount, event) => {
       minted = true;
       loading = false;
       console.log("amount", amount.toNumber());
-      currentMinted += amount.toNumber();
+      findCurrentMinted();
     });
   }
 
@@ -128,27 +141,31 @@
     console.log("numberOfTokensMinted", numberOfTokensOwned.toNumber());
     // for (let i = 0; i < Number(numberOfTokensOwned); i++) {
 
-    const ownedToken = await getOwned(contract, account);
+    let ownedToken = await getOwned(contract, account);
     console.log("ownedToken is: ", ownedToken);
 
-    // const token = await contract.mintedTokenOfOwnerByIndex(account, i);
-    const URI = await contract.uri(ownedToken[0].id);
-    const mergedURI = URI.slice(0, -4) + ownedToken[0].id;
-    console.log("URI is ", mergedURI);
-    let response;
-    try {
-      response = await fetch(
-        "https://sheltered-beach-35853.herokuapp.com/" + mergedURI
-      );
-      // response = await fetch(URI);
-    } catch (error) {
-      console.log(error);
+    for (let i = 0; i < ownedToken.length; i++) {
+      // const token = await contract.mintedTokenOfOwnerByIndex(account, i);
+      const URI = await contract.uri(ownedToken[i].id);
+      const mergedURI = URI.slice(0, -4) + ownedToken[i].id;
+      console.log("URI is ", mergedURI);
+      let response;
+      try {
+        response = await fetch(
+          "https://sheltered-beach-35853.herokuapp.com/" + mergedURI
+        );
+        // response = await fetch(URI);
+      } catch (error) {
+        console.log(error);
+      }
+
+      const result = await response.json();
+      result.id = ownedToken[i].id;
+      if (ownedToken[i].quantity > 0) {
+        ownedTokens.push(result);
+      }
     }
 
-    const result = await response.json();
-    result.id = ownedToken[0].id;
-
-    ownedTokens.push(result);
     // }
     ownedTokens = ownedTokens;
   }
@@ -156,8 +173,8 @@
   async function findCurrentMinted() {
     const total = await contract.MAX_MINTS();
     sayHi("uri");
-    const ownedToken = await getOwned(contract, account);
-    console.log("ownedToken is: ", ownedToken);
+    // const ownedToken = await getOwned(contract, account);
+    // console.log("ownedToken is: ", ownedToken);
     const supply = await contract.totalSupply(1);
 
     maxMints = Number(total);
