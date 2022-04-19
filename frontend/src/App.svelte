@@ -7,7 +7,8 @@
   // const CONTRACT_ID = "0x26c1a3Bca442fe4517437d139779bf1cc153EecB";
   // const CONTRACT_ID = "0xF8bB3f6e2502325B21E7abD98f3132a022C9B260";
   // const CONTRACT_ID = "0xc4a805Feb788010EDdD940D9B88F7C08723AD101";
-  const CONTRACT_ID = "0x30fD288439231Bf31C6f73562496112773CEcDC0";
+  // const CONTRACT_ID = "0x30fD288439231Bf31C6f73562496112773CEcDC0";
+  const CONTRACT_ID = "0x29F5eb891F5229346F4995D9De74590cDf565fAD";
 
   const ethereum = window.ethereum;
 
@@ -21,8 +22,30 @@
   let quantity = 1;
   let ownedTokens = [];
   let recentlyMintedTokens = [];
-  let openseaContractLink = 'https://testnets.opensea.io/assets/0x290422ec6eadc2cc12acd98c50333720382ca86b/'
+  let openseaContractLink =
+    "https://testnets.opensea.io/assets/0x290422ec6eadc2cc12acd98c50333720382ca86b/";
+  let tokenSymbol = "PL";
+  let selected = false;
+  let childNFTs = {};
   // let accounts = [];
+  function toggle(event) {
+    // selected =!selected;
+    // childNFTs[event.currentTarget.id] = selected;
+    childNFTs[event.currentTarget.id] = !childNFTs[event.currentTarget.id];
+    // console.log(
+    //   "selected",
+    //   selected,
+    //   "event target",
+    //   event.target,
+    //   "event",
+    //   event,
+    //   "event current target",
+    //   event.currentTarget,
+    //   "event current target id",
+    //   event.currentTarget.id
+    // );
+    console.log("childNFTs", childNFTs);
+  }
 
   onMount(() => {
     chain = window.ethereum.networkVersion;
@@ -84,7 +107,19 @@
     contractWithSigner.on("Minted", (to, tokenId, amount, event) => {
       minted = true;
       loading = false;
-      currentMinted += amount;
+      console.log("amount", amount.toNumber());
+      currentMinted += amount.toNumber();
+    });
+  }
+
+  async function forge() {
+    await contractWithSigner.mint(account, 1, quantity, "0x00");
+    loading = true;
+    contractWithSigner.on("Minted", (to, tokenId, amount, event) => {
+      minted = true;
+      loading = false;
+      console.log("amount", amount.toNumber());
+      currentMinted += amount.toNumber();
     });
   }
 
@@ -200,7 +235,7 @@
         </p>
         <ul>
           <li>Contract address: {CONTRACT_ID}</li>
-          <li>Token symbol: CFNFT</li>
+          <li>Token symbol: {tokenSymbol}</li>
           <li>Token decimal: 0</li>
         </ul>
       {/if}
@@ -228,22 +263,26 @@
       <h2>Your Tokens:</h2>
       {#if ownedTokens}
         <section>
+          <button on:click={forge}>Forge Selected</button>
           <ul class="grid">
+            <!-- <select id="childTokens" multiple="multiple"> -->
             {#each ownedTokens as token}
-              <li>
+              <li id={token.id} on:click={toggle}>
+                <label>
+                  <input type="checkbox" checked={childNFTs[token.id]} />
+                </label>
                 <div class="grid-image">
-                  <a
-                    href={`${openseaContractLink}${token.id}`}
-                  >
-                    <img src={token.image} alt={token.description} />
-                  </a>
+                  <img src={token.image} alt={token.description} />
                 </div>
                 <div class="grid-footer">
-                  <h2>{token.name}</h2>
-                  <span>{token.description}</span>
+                  <a target="_blank" href={`${openseaContractLink}${token.id}`}>
+                    <h2>{token.name}</h2>
+                    <span>{token.description}</span>
+                  </a>
                 </div>
               </li>
             {/each}
+            <!-- </select> -->
           </ul>
         </section>
       {:else}
