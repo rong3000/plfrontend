@@ -8,7 +8,9 @@
   // const CONTRACT_ID = "0xF8bB3f6e2502325B21E7abD98f3132a022C9B260";
   // const CONTRACT_ID = "0xc4a805Feb788010EDdD940D9B88F7C08723AD101";
   // const CONTRACT_ID = "0x30fD288439231Bf31C6f73562496112773CEcDC0";
-  const CONTRACT_ID = "0x29F5eb891F5229346F4995D9De74590cDf565fAD";
+  // const CONTRACT_ID = "0x29F5eb891F5229346F4995D9De74590cDf565fAD";
+  const CONTRACT_ID = "0x92AB5aBa441674FD59aeb63Ee3282851567b63a1";
+  
 
   const ethereum = window.ethereum;
 
@@ -109,7 +111,7 @@
   // }
 
   async function mint() {
-    await contractWithSigner.mint(account, 1, quantity, "0x00");
+    await contractWithSigner.mint(account, 4, quantity, "0x00");
     loading = true;
     contractWithSigner.on("Minted", (to, tokenId, amount, event) => {
       minted = true;
@@ -120,18 +122,33 @@
   }
 
   async function forge() {
-    await contractWithSigner.burnBatch(
+    let amounts = [];
+    let newId = "";
+    console.log('ha1?');
+    let newArray = Array.from(childNFTarray);
+
+    console.log('ha2?', newArray.length);
+    for (let i=0; i<newArray.length; i++) {
+      amounts.push(1);
+
+      newId += newArray[i].toString().padStart(4, '0');
+      console.log('newId', newId);
+    }
+    let forgedId = parseInt(newId);
+    console.log('forged id is ', forgedId);
+
+    await contractWithSigner.forge(
       account,
       Array.from(childNFTarray),
-      [1, 1]
+      amounts,
+      forgedId,
+      "0x00"
     );
-
-    await contractWithSigner.mint(account, 33445, 1, "0x00");
     loading = true;
     contractWithSigner.on("Minted", (to, tokenId, amount, event) => {
       minted = true;
       loading = false;
-      console.log("amount", amount.toNumber());
+      console.log("minted amount", amount.toNumber());
       findCurrentMinted();
     });
   }

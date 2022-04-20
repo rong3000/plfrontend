@@ -54,6 +54,18 @@ contract PL1155 is ERC1155, Ownable, Pausable, ERC1155Burnable, ERC1155Supply, E
         emit Minted(account, id, amount);
     }
 
+    function forge(
+        address account,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        uint256 id,
+        bytes memory data
+    ) public {
+        _burnBatch(account, ids, amounts);
+        _mint(account, id, 1, data);
+        emit Minted(account, id, 1);
+    }
+
     function mintBatch(
         address to,
         uint256[] memory ids,
