@@ -9,8 +9,8 @@
   // const CONTRACT_ID = "0xc4a805Feb788010EDdD940D9B88F7C08723AD101";
   // const CONTRACT_ID = "0x30fD288439231Bf31C6f73562496112773CEcDC0";
   // const CONTRACT_ID = "0x29F5eb891F5229346F4995D9De74590cDf565fAD";
-  const CONTRACT_ID = "0x92AB5aBa441674FD59aeb63Ee3282851567b63a1";
-  
+  // const CONTRACT_ID = "0x92AB5aBa441674FD59aeb63Ee3282851567b63a1";
+  const CONTRACT_ID = "0x6f99A086E605e3aC2750467f98fA2d7613Cbf74b";
 
   const ethereum = window.ethereum;
 
@@ -25,7 +25,7 @@
   let ownedTokens = [];
   let recentlyMintedTokens = [];
   let openseaContractLink =
-    "https://testnets.opensea.io/assets/0x290422ec6eadc2cc12acd98c50333720382ca86b/";
+    "https://testnets.opensea.io/assets/0x92AB5aBa441674FD59aeb63Ee3282851567b63a1/";
   let tokenSymbol = "PL";
   let selected = false;
   let childNFTs = {};
@@ -121,7 +121,7 @@
     });
   }
 
-  async function forge() {
+  async function merge() {
     let amounts = [];
     let newId = "";
     console.log('ha1?');
@@ -134,14 +134,14 @@
       newId += newArray[i].toString().padStart(4, '0');
       console.log('newId', newId);
     }
-    let forgedId = parseInt(newId);
-    console.log('forged id is ', forgedId);
+    let mergedId = parseInt(newId);
+    console.log('merged id is ', mergedId);
 
-    await contractWithSigner.forge(
+    await contractWithSigner.merge(
       account,
       Array.from(childNFTarray),
       amounts,
-      forgedId,
+      mergedId,
       "0x00"
     );
     loading = true;
@@ -152,6 +152,36 @@
       findCurrentMinted();
     });
   }
+
+
+  async function split(id) {
+    let ids = [];
+    let amounts = [];
+    console.log('split1');
+
+    // for (let i=0; i<newArray.length; i++) {
+    //   amounts.push(1);
+    //   newId += newArray[i].toString().padStart(4, '0');
+    //   console.log('newId', newId);
+    // }
+    // let mergedId = parseInt(newId);
+    // console.log('merged id is ', mergedId);
+
+    await contractWithSigner.split(
+      account,
+      id,
+      ids,
+      amounts,
+      "0x00"
+    );
+    loading = true;
+    contractWithSigner.on("MintedBatch", (to, tokenId, amount, event) => {
+      minted = true;
+      loading = false;
+      console.log("minted amount", amount.toNumber());
+      findCurrentMinted();
+    });
+  }  
 
   async function findCurrentOwned() {
     const numberOfTokensOwned = await contract.balanceOf(account, 1);
@@ -165,7 +195,10 @@
       // const token = await contract.mintedTokenOfOwnerByIndex(account, i);
       const URI = await contract.uri(ownedToken[i].id);
       const mergedURI = URI.slice(0, -4) + ownedToken[i].id;
-      console.log("URI is ", mergedURI);
+      // const originalURI = URI
+      // console.log("original URI is ", URI);
+      // const mergedURI = URI.slice(0, -4);
+      console.log("merged URI is ", mergedURI);
       let response;
       try {
         response = await fetch(
@@ -297,7 +330,7 @@
       <h2>Your Tokens:</h2>
       {#if ownedTokens}
         <section>
-          <button on:click={forge}>Forge Selected</button>
+          <button on:click={merge}>Merge Selected</button>
           <ul class="grid">
             <!-- <select id="childTokens" multiple="multiple"> -->
             {#each ownedTokens as token}

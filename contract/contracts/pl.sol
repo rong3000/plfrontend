@@ -10,6 +10,15 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./ERC1155URIStorage.sol";
 
 contract PL1155 is ERC1155, Ownable, Pausable, ERC1155Burnable, ERC1155Supply, ERC1155URIStorage {
+    string storeMetaURL = "https://metapython.herokuapp.com/api/store/";
+    function contractURI() public view returns (string memory) {
+        return storeMetaURL;
+    }
+
+    function setStoreMetaURL(string memory _storeMetaURL) public onlyOwner {
+        storeMetaURL = _storeMetaURL;
+    }
+    
     using SafeMath for uint256;
 
     uint256 public MAX_MINTS = 204800;
@@ -17,6 +26,7 @@ contract PL1155 is ERC1155, Ownable, Pausable, ERC1155Burnable, ERC1155Supply, E
 
     event Minted(address to, uint256 tokenId, uint256 amount);
     event MintedBatch(address to, uint256[] ids, uint256[] amounts);
+    event PermanentURI(string _value, uint256 indexed _id);
 
     constructor() ERC1155("https://metapython.herokuapp.com/api/box/") {}
 
@@ -54,7 +64,11 @@ contract PL1155 is ERC1155, Ownable, Pausable, ERC1155Burnable, ERC1155Supply, E
         emit Minted(account, id, amount);
     }
 
-    function forge(
+    function permanentURI(string memory _value, uint256 _id) public onlyOwner {
+        emit PermanentURI(_value, _id);
+    }
+
+    function merge(
         address account,
         uint256[] memory ids,
         uint256[] memory amounts,
@@ -64,6 +78,34 @@ contract PL1155 is ERC1155, Ownable, Pausable, ERC1155Burnable, ERC1155Supply, E
         _burnBatch(account, ids, amounts);
         _mint(account, id, 1, data);
         emit Minted(account, id, 1);
+    }
+
+    function split(
+        address account,
+        uint256 id,
+        bytes memory data
+    ) public {
+        uint digits = 0;
+        uint idCalLength = id;
+        while (idCalLength != 0) {
+            idCalLength /= 10000;
+            digits++;
+        }
+        require(digits > 1, "Cannot split single element");
+        require(digits < 11, "Cannot have more than 10 elements");
+
+        _burn(account, id, 1);
+
+        uint256[] memory ids = new uint[](digits);
+        uint256[] memory amounts = new uint[](digits);
+        for (uint256 i = 0; i < digits; i++) {
+            ids[i] = id % 10000;
+            amounts[i] = 1;
+            id = id / 10000;
+        }
+        
+        _mintBatch(account, ids, amounts, data);
+        emit MintedBatch(account, ids, amounts);
     }
 
     function mintBatch(
