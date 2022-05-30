@@ -10,7 +10,7 @@
   // const CONTRACT_ID = "0x30fD288439231Bf31C6f73562496112773CEcDC0";
   // const CONTRACT_ID = "0x29F5eb891F5229346F4995D9De74590cDf565fAD";
   // const CONTRACT_ID = "0x92AB5aBa441674FD59aeb63Ee3282851567b63a1";
-  const CONTRACT_ID = "0x6f99A086E605e3aC2750467f98fA2d7613Cbf74b";
+  const CONTRACT_ID = "0x952bd125B9a46e28Ed9A6a9be0674Fe10b3976A6";
 
   const ethereum = window.ethereum;
 
@@ -21,7 +21,7 @@
   let account = null;
   let minted = false;
   let loading = false;
-  let quantity = 1;
+  let bElementId = 1;
   let ownedTokens = [];
   let recentlyMintedTokens = [];
   let openseaContractLink =
@@ -111,7 +111,7 @@
   // }
 
   async function mint() {
-    await contractWithSigner.mint(account, 4, quantity, "0x00");
+    await contractWithSigner.mint(account, bElementId, 1, "0x00");
     loading = true;
     contractWithSigner.on("Minted", (to, tokenId, amount, event) => {
       minted = true;
@@ -122,20 +122,7 @@
   }
 
   async function merge() {
-    // let amounts = [];
-    // let newId = "";
     console.log("merge1?");
-    // let newArray = Array.from(childNFTarray);
-
-    // console.log('ha2?', newArray.length);
-    // for (let i=0; i<newArray.length; i++) {
-    //   amounts.push(1);
-
-    //   newId += newArray[i].toString().padStart(4, '0');
-    //   console.log('newId', newId);
-    // }
-    // let mergedId = parseInt(newId);
-    // console.log('merged id is ', mergedId);
 
     await contractWithSigner.merge(account, Array.from(childNFTarray), "0x00");
     loading = true;
@@ -148,16 +135,23 @@
   }
 
   async function split() {
-    console.log("split1");
+    console.log("childNFTarray size and element ", childNFTarray.size, Array.from(childNFTarray));
 
-    await contractWithSigner.split(account, id, "0x00");
-    loading = true;
-    contractWithSigner.on("Splited", (to, id, event) => {
-      minted = true;
-      loading = false;
-      console.log("splited ", id.toNumber());
-      findCurrentMinted();
-    });
+    if (childNFTarray.size == 1 && Array.from(childNFTarray)[0] > 10000) {
+      console.log("can split");
+
+      await contractWithSigner.split(account, Array.from(childNFTarray)[0], "0x00");
+      loading = true;
+      contractWithSigner.on("Splited", (to, id, event) => {
+        minted = true;
+        loading = false;
+        console.log("splited ", id.toNumber());
+        findCurrentMinted();
+      });
+    }
+    else {
+      console.log("Can only select one merged element to split")
+    }
   }
 
   async function findCurrentOwned() {
@@ -167,6 +161,7 @@
 
     let ownedToken = await getOwned(contract, account);
     console.log("ownedToken is: ", ownedToken);
+    console.log("childNFTarray", childNFTarray.size);
 
     for (let i = 0; i < ownedToken.length; i++) {
       // const token = await contract.mintedTokenOfOwnerByIndex(account, i);
@@ -282,15 +277,16 @@
           <li>Token symbol: {tokenSymbol}</li>
           <li>Token decimal: 0</li>
         </ul>
+        <p>Please refresh this page to see your tokens here.</p>
       {/if}
 
       <form on:submit|preventDefault={mint}>
         <input
           type="number"
           min="1"
-          max="3"
-          placeholder="Quantity to mint"
-          bind:value={quantity}
+          max="9999"
+          placeholder="Basic element id to mint"
+          bind:value={bElementId}
         />
 
         {#if currentMinted >= maxMints}
@@ -307,14 +303,18 @@
       <h2>Your Tokens:</h2>
       {#if ownedTokens}
         <section>
-          
-          {#if childNFTarray.length == 1}
+          <!-- {#if childNFTarray.size == 1}
             <button disabled on:click={merge}>Cannot merge one</button>
             <button on:click={split}>Split</button>
-          {:else}
+          {:else if childNFTarray.size == 0}
+            <button disabled on:click={merge}>Merge Nothing Selected</button>
+            <button disabled on:click={split}>Split Nothing Selected</button>
+          {:else}            
             <button on:click={merge}>Merge</button>
-            <button disabled on:click={split}>Cannot Split 0 or more than 1</button>
-          {/if}
+            <button disabled on:click={split}>Cannot split more than one at a time</button>
+          {/if} -->
+          <button on:click={merge}>Merge</button>
+          <button on:click={split}>Split</button>
           <ul class="grid">
             <!-- <select id="childTokens" multiple="multiple"> -->
             {#each ownedTokens as token}

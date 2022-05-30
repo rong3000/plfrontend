@@ -83,6 +83,9 @@ button {
 
 button:disabled {
   cursor: default;
+  background-color: #E7E7E7;
+  color: black;
+
 }
 
 button:focus {

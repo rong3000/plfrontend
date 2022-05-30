@@ -70,6 +70,7 @@ contract PL1155 is
         bytes memory data
     ) public onlyOwner {
         require(id > 0, "Id cannot be 0");
+        require(id < 10000, "Id must be smaller than 10000");
         _mint(account, id, amount, data);
         emit Minted(account, id, amount);
     }
@@ -119,8 +120,8 @@ contract PL1155 is
         uint256[] memory ids = new uint256[](digits);
         uint256[] memory amounts = new uint256[](digits);
         for (uint256 i = 0; i < digits; i++) {
-            require(ids[i] > 0, "Basic element id cannot be 0");
             ids[i] = id % 10000;
+            require(ids[i] > 0, "Basic element id cannot be 0");
             amounts[i] = 1;
             id = id / 10000;
         }
@@ -137,6 +138,7 @@ contract PL1155 is
     ) public onlyOwner {
         for (uint256 i = 0; i < ids.length; i++) {
             require(ids[i] > 0, "Id cannot be 0");
+            require(ids[i] < 10000, "Id must be smaller than 10000");
         }
         _mintBatch(to, ids, amounts, data);
         emit MintedBatch(to, ids, amounts);
