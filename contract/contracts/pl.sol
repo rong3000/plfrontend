@@ -9,8 +9,16 @@ import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./ERC1155URIStorage.sol";
 
-contract PL1155 is ERC1155, Ownable, Pausable, ERC1155Burnable, ERC1155Supply, ERC1155URIStorage {
+contract PL1155 is
+    ERC1155,
+    Ownable,
+    Pausable,
+    ERC1155Burnable,
+    ERC1155Supply,
+    ERC1155URIStorage
+{
     string storeMetaURL = "https://metapython.herokuapp.com/api/store/";
+
     function contractURI() public view returns (string memory) {
         return storeMetaURL;
     }
@@ -18,7 +26,7 @@ contract PL1155 is ERC1155, Ownable, Pausable, ERC1155Burnable, ERC1155Supply, E
     function setStoreMetaURL(string memory _storeMetaURL) public onlyOwner {
         storeMetaURL = _storeMetaURL;
     }
-    
+
     using SafeMath for uint256;
 
     uint256 public MAX_MINTS = 204800;
@@ -26,6 +34,7 @@ contract PL1155 is ERC1155, Ownable, Pausable, ERC1155Burnable, ERC1155Supply, E
 
     event Minted(address to, uint256 tokenId, uint256 amount);
     event MintedBatch(address to, uint256[] ids, uint256[] amounts);
+    event Splited(address to, uint256 id);
     event PermanentURI(string _value, uint256 indexed _id);
 
     constructor() ERC1155("https://metapython.herokuapp.com/api/box/") {}
@@ -60,6 +69,7 @@ contract PL1155 is ERC1155, Ownable, Pausable, ERC1155Burnable, ERC1155Supply, E
         uint256 amount,
         bytes memory data
     ) public onlyOwner {
+        require(id > 0, "Id cannot be 0");
         _mint(account, id, amount, data);
         emit Minted(account, id, amount);
     }
@@ -71,41 +81,52 @@ contract PL1155 is ERC1155, Ownable, Pausable, ERC1155Burnable, ERC1155Supply, E
     function merge(
         address account,
         uint256[] memory ids,
-        uint256[] memory amounts,
-        uint256 id,
         bytes memory data
     ) public {
+        require(ids.length > 1, "Cannot merge single element");
+        require(ids.length < 11, "Cannot merge more than 10 elements");
+        uint256 id = 0;
+        uint256[] memory amounts = new uint256[](ids.length);
+        for (uint256 i = 0; i < ids.length; i++) {
+            require(ids[i] < 10000, "Cannot merge with elements that had been merged");
+            require(ids[i] > 0, "Basic element id cannot be 0");
+            id += ids[i] * (10000 ** i);
+            amounts[i] = 1;
+        }
+        
+        require(id > 10000, "Merged id cannot be basic element id");
         _burnBatch(account, ids, amounts);
         _mint(account, id, 1, data);
         emit Minted(account, id, 1);
     }
 
     function split(
-        address account,
+        address to,
         uint256 id,
         bytes memory data
     ) public {
-        uint digits = 0;
-        uint idCalLength = id;
+        require(id > 10000, "Cannot split basic element");
+        uint256 digits = 0;
+        uint256 idCalLength = id;
         while (idCalLength != 0) {
             idCalLength /= 10000;
             digits++;
         }
-        require(digits > 1, "Cannot split single element");
-        require(digits < 11, "Cannot have more than 10 elements");
+        require(digits < 11, "Cannot be splited into more than 10 elements");
 
-        _burn(account, id, 1);
+        _burn(to, id, 1);
 
-        uint256[] memory ids = new uint[](digits);
-        uint256[] memory amounts = new uint[](digits);
+        uint256[] memory ids = new uint256[](digits);
+        uint256[] memory amounts = new uint256[](digits);
         for (uint256 i = 0; i < digits; i++) {
+            require(ids[i] > 0, "Basic element id cannot be 0");
             ids[i] = id % 10000;
             amounts[i] = 1;
             id = id / 10000;
         }
-        
-        _mintBatch(account, ids, amounts, data);
-        emit MintedBatch(account, ids, amounts);
+
+        _mintBatch(to, ids, amounts, data);
+        emit Splited(to, id);
     }
 
     function mintBatch(
@@ -114,6 +135,9 @@ contract PL1155 is ERC1155, Ownable, Pausable, ERC1155Burnable, ERC1155Supply, E
         uint256[] memory amounts,
         bytes memory data
     ) public onlyOwner {
+        for (uint256 i = 0; i < ids.length; i++) {
+            require(ids[i] > 0, "Id cannot be 0");
+        }
         _mintBatch(to, ids, amounts, data);
         emit MintedBatch(to, ids, amounts);
     }
@@ -153,7 +177,10 @@ contract PL1155 is ERC1155, Ownable, Pausable, ERC1155Burnable, ERC1155Supply, E
         return super.uri(tokenId);
     }
 
-    function setTokenURI(uint256 tokenId, string memory _tokenURI) public onlyOwner {
+    function setTokenURI(uint256 tokenId, string memory _tokenURI)
+        public
+        onlyOwner
+    {
         _setTokenURI(tokenId, _tokenURI);
     }
 }

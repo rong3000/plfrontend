@@ -122,66 +122,43 @@
   }
 
   async function merge() {
-    let amounts = [];
-    let newId = "";
-    console.log('ha1?');
-    let newArray = Array.from(childNFTarray);
+    // let amounts = [];
+    // let newId = "";
+    console.log("merge1?");
+    // let newArray = Array.from(childNFTarray);
 
-    console.log('ha2?', newArray.length);
-    for (let i=0; i<newArray.length; i++) {
-      amounts.push(1);
-
-      newId += newArray[i].toString().padStart(4, '0');
-      console.log('newId', newId);
-    }
-    let mergedId = parseInt(newId);
-    console.log('merged id is ', mergedId);
-
-    await contractWithSigner.merge(
-      account,
-      Array.from(childNFTarray),
-      amounts,
-      mergedId,
-      "0x00"
-    );
-    loading = true;
-    contractWithSigner.on("Minted", (to, tokenId, amount, event) => {
-      minted = true;
-      loading = false;
-      console.log("minted amount", amount.toNumber());
-      findCurrentMinted();
-    });
-  }
-
-
-  async function split(id) {
-    let ids = [];
-    let amounts = [];
-    console.log('split1');
-
+    // console.log('ha2?', newArray.length);
     // for (let i=0; i<newArray.length; i++) {
     //   amounts.push(1);
+
     //   newId += newArray[i].toString().padStart(4, '0');
     //   console.log('newId', newId);
     // }
     // let mergedId = parseInt(newId);
     // console.log('merged id is ', mergedId);
 
-    await contractWithSigner.split(
-      account,
-      id,
-      ids,
-      amounts,
-      "0x00"
-    );
+    await contractWithSigner.merge(account, Array.from(childNFTarray), "0x00");
     loading = true;
-    contractWithSigner.on("MintedBatch", (to, tokenId, amount, event) => {
+    contractWithSigner.on("Minted", (to, tokenId, amount, event) => {
       minted = true;
       loading = false;
-      console.log("minted amount", amount.toNumber());
+      console.log("Merged id is ", tokenId.toNumber());
       findCurrentMinted();
     });
-  }  
+  }
+
+  async function split() {
+    console.log("split1");
+
+    await contractWithSigner.split(account, id, "0x00");
+    loading = true;
+    contractWithSigner.on("Splited", (to, id, event) => {
+      minted = true;
+      loading = false;
+      console.log("splited ", id.toNumber());
+      findCurrentMinted();
+    });
+  }
 
   async function findCurrentOwned() {
     const numberOfTokensOwned = await contract.balanceOf(account, 1);
@@ -330,7 +307,14 @@
       <h2>Your Tokens:</h2>
       {#if ownedTokens}
         <section>
-          <button on:click={merge}>Merge Selected</button>
+          
+          {#if childNFTarray.length == 1}
+            <button disabled on:click={merge}>Cannot merge one</button>
+            <button on:click={split}>Split</button>
+          {:else}
+            <button on:click={merge}>Merge</button>
+            <button disabled on:click={split}>Cannot Split 0 or more than 1</button>
+          {/if}
           <ul class="grid">
             <!-- <select id="childTokens" multiple="multiple"> -->
             {#each ownedTokens as token}
