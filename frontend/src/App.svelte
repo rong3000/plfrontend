@@ -146,12 +146,20 @@
   }
 
   async function split() {
-    console.log("childNFTarray size and element ", childNFTarray.size, Array.from(childNFTarray));
+    console.log(
+      "childNFTarray size and element ",
+      childNFTarray.size,
+      Array.from(childNFTarray)
+    );
 
     if (childNFTarray.size == 1 && Array.from(childNFTarray)[0] > 10000) {
       console.log("can split");
 
-      await contractWithSigner.split(account, Array.from(childNFTarray)[0], "0x00");
+      await contractWithSigner.split(
+        account,
+        Array.from(childNFTarray)[0],
+        "0x00"
+      );
       loading = true;
       contractWithSigner.on("Split", (to, id, event) => {
         minted = true;
@@ -159,9 +167,8 @@
         console.log("Split ", id.toNumber());
         findCurrentMinted();
       });
-    }
-    else {
-      console.log("Can only select one merged element to split")
+    } else {
+      console.log("Can only select one merged element to split");
     }
   }
 
@@ -313,23 +320,28 @@
       <h2>Your Tokens:</h2>
       {#if ownedTokens}
         <section>
-          {#if mergeMintBtn == 1}            
-            <button disabled on:click={merge}>Cannot merge one</button>
+          {#if mergeMintBtn == 1}
+            <button disabled on:click={merge}>Merge: Select More</button>
             {#if Array.from(childNFTarray)[0] > 10000}
               <button on:click={split}>Split</button>
             {:else}
-              <button disabled on:click={split}>Cannot split base element</button>
+              <button disabled on:click={split}>Split: Merged item only</button>
             {/if}
           {:else if mergeMintBtn == 0}
-            <button disabled on:click={merge}>Merge Nothing Selected</button>
-            <button disabled on:click={split}>Split Nothing Selected</button>
+            <button disabled on:click={merge}>Merge: Not Selected</button>
+            <button disabled on:click={split}>Split: Not Selected</button>
           {:else}
-            {#if containMerged == true}            
-              <button disabled on:click={merge}>Cannot Merge: containing elements already merged</button>
+            {#if containMerged == true}
+              <button disabled on:click={merge}
+                >Merge: Remove merged items</button
+              >
+            {:else if childNFTarray.size > 10}
+              <button disabled on:click={merge}>Merge: Select 10 or less</button
+              >
             {:else}
               <button on:click={merge}>Merge</button>
             {/if}
-            <button disabled on:click={split}>Cannot split more than one at a time</button>
+            <button disabled on:click={split}>Split: One at a time</button>
           {/if}
           <!-- <button on:click={merge}>Merge</button>
           <button on:click={split}>Split</button> -->

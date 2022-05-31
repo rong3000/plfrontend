@@ -108,6 +108,7 @@ async function getOwned(contract, account) {
             }
         }
     }
+    owned = owned.filter(item => item.quantity != 0);
     return owned;
 }
 
