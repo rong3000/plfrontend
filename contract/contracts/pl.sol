@@ -34,7 +34,7 @@ contract PL1155 is
 
     event Minted(address to, uint256 tokenId, uint256 amount);
     event MintedBatch(address to, uint256[] ids, uint256[] amounts);
-    event Splited(address to, uint256 id);
+    event Split(address to, uint256 id);
     event PermanentURI(string _value, uint256 indexed _id);
 
     constructor() ERC1155("https://metapython.herokuapp.com/api/box/") {}
@@ -107,13 +107,14 @@ contract PL1155 is
         bytes memory data
     ) public {
         require(id > 10000, "Cannot split basic element");
+        uint256 originalId = id;
         uint256 digits = 0;
         uint256 idCalLength = id;
         while (idCalLength != 0) {
             idCalLength /= 10000;
             digits++;
         }
-        require(digits < 11, "Cannot be splited into more than 10 elements");
+        require(digits < 11, "Cannot be split into more than 10 elements");
 
         _burn(to, id, 1);
 
@@ -127,7 +128,7 @@ contract PL1155 is
         }
 
         _mintBatch(to, ids, amounts, data);
-        emit Splited(to, id);
+        emit Split(to, originalId);
     }
 
     function mintBatch(

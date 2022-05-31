@@ -10,7 +10,7 @@
   // const CONTRACT_ID = "0x30fD288439231Bf31C6f73562496112773CEcDC0";
   // const CONTRACT_ID = "0x29F5eb891F5229346F4995D9De74590cDf565fAD";
   // const CONTRACT_ID = "0x92AB5aBa441674FD59aeb63Ee3282851567b63a1";
-  const CONTRACT_ID = "0x952bd125B9a46e28Ed9A6a9be0674Fe10b3976A6";
+  const CONTRACT_ID = "0x8Ef0879e5bBcf5edf18B0C03D4DF858Ac07D3408";
 
   const ethereum = window.ethereum;
 
@@ -30,6 +30,8 @@
   let selected = false;
   let childNFTs = {};
   let childNFTarray = new Set();
+  let mergeMintBtn = false;
+  let containMerged = false;
   // let accounts = [];
   function toggle(event) {
     // selected =!selected;
@@ -53,7 +55,16 @@
     } else if (!childNFTs[event.currentTarget.id]) {
       childNFTarray.delete(event.currentTarget.id);
     }
+    mergeMintBtn = childNFTarray.size;
     console.log("childNFTarray", ...childNFTarray);
+    console.log("childNFTarray.size is", mergeMintBtn);
+    console.log("childNFTarray.size bool", mergeMintBtn == 1);
+    containMerged = false;
+    for (let i = 0; i < childNFTarray.size; i++) {
+      if (Array.from(childNFTarray)[i] > 10000) {
+        containMerged = true;
+      }
+    }
   }
 
   onMount(() => {
@@ -142,10 +153,10 @@
 
       await contractWithSigner.split(account, Array.from(childNFTarray)[0], "0x00");
       loading = true;
-      contractWithSigner.on("Splited", (to, id, event) => {
+      contractWithSigner.on("Split", (to, id, event) => {
         minted = true;
         loading = false;
-        console.log("splited ", id.toNumber());
+        console.log("Split ", id.toNumber());
         findCurrentMinted();
       });
     }
@@ -161,7 +172,6 @@
 
     let ownedToken = await getOwned(contract, account);
     console.log("ownedToken is: ", ownedToken);
-    console.log("childNFTarray", childNFTarray.size);
 
     for (let i = 0; i < ownedToken.length; i++) {
       // const token = await contract.mintedTokenOfOwnerByIndex(account, i);
@@ -303,18 +313,26 @@
       <h2>Your Tokens:</h2>
       {#if ownedTokens}
         <section>
-          <!-- {#if childNFTarray.size == 1}
+          {#if mergeMintBtn == 1}            
             <button disabled on:click={merge}>Cannot merge one</button>
-            <button on:click={split}>Split</button>
-          {:else if childNFTarray.size == 0}
+            {#if Array.from(childNFTarray)[0] > 10000}
+              <button on:click={split}>Split</button>
+            {:else}
+              <button disabled on:click={split}>Cannot split base element</button>
+            {/if}
+          {:else if mergeMintBtn == 0}
             <button disabled on:click={merge}>Merge Nothing Selected</button>
             <button disabled on:click={split}>Split Nothing Selected</button>
-          {:else}            
-            <button on:click={merge}>Merge</button>
+          {:else}
+            {#if containMerged == true}            
+              <button disabled on:click={merge}>Cannot Merge: containing elements already merged</button>
+            {:else}
+              <button on:click={merge}>Merge</button>
+            {/if}
             <button disabled on:click={split}>Cannot split more than one at a time</button>
-          {/if} -->
-          <button on:click={merge}>Merge</button>
-          <button on:click={split}>Split</button>
+          {/if}
+          <!-- <button on:click={merge}>Merge</button>
+          <button on:click={split}>Split</button> -->
           <ul class="grid">
             <!-- <select id="childTokens" multiple="multiple"> -->
             {#each ownedTokens as token}
