@@ -30,9 +30,10 @@
   let selected = false;
   let childNFTs = {};
   let childNFTarray = new Set();
-  let mergeMintBtn = false;
+  let mergeMintBtn;
   let containMerged = false;
-  // let accounts = [];
+  let ownedTokensLength;
+
   function toggle(event) {
     // selected =!selected;
     // childNFTs[event.currentTarget.id] = selected;
@@ -58,7 +59,7 @@
     mergeMintBtn = childNFTarray.size;
     console.log("childNFTarray", ...childNFTarray);
     console.log("childNFTarray.size is", mergeMintBtn);
-    console.log("childNFTarray.size bool", mergeMintBtn == 1);
+    console.log("childNFTarray.size equals one: bool", mergeMintBtn == 1);
     containMerged = false;
     for (let i = 0; i < childNFTarray.size; i++) {
       if (Array.from(childNFTarray)[i] > 10000) {
@@ -128,7 +129,7 @@
       minted = true;
       loading = false;
       console.log("amount", amount.toNumber());
-      findCurrentMinted();
+      findCurrentOwned();
     });
   }
 
@@ -141,7 +142,7 @@
       minted = true;
       loading = false;
       console.log("Merged id is ", tokenId.toNumber());
-      findCurrentMinted();
+      findCurrentOwned();
     });
   }
 
@@ -165,7 +166,7 @@
         minted = true;
         loading = false;
         console.log("Split ", id.toNumber());
-        findCurrentMinted();
+      findCurrentOwned();
       });
     } else {
       console.log("Can only select one merged element to split");
@@ -177,10 +178,16 @@
     console.log("numberOfTokensMinted", numberOfTokensOwned.toNumber());
     // for (let i = 0; i < Number(numberOfTokensOwned); i++) {
 
+    childNFTarray.clear();
     let ownedToken = await getOwned(contract, account);
     console.log("ownedToken is: ", ownedToken);
+    console.log("childNFTarray is cleared ", childNFTarray);
 
+    ownedTokens = [];
+    console.log("resetted ownedToken is ", ownedTokens);
+    
     for (let i = 0; i < ownedToken.length; i++) {
+      console.log("fetching ", i);
       // const token = await contract.mintedTokenOfOwnerByIndex(account, i);
       const URI = await contract.uri(ownedToken[i].id);
       const mergedURI = URI.slice(0, -4) + ownedToken[i].id;
@@ -207,6 +214,12 @@
 
     // }
     ownedTokens = ownedTokens;
+    ownedTokensLength = ownedTokens.length;
+    mergeMintBtn = 0; //Clear button status
+    childNFTs = {}; //Clear selection
+
+    console.log("ownedTokens, ownedTokensLength, mergeMintBtn, childNFTs", ownedTokens, ownedTokensLength, mergeMintBtn, childNFTs);
+
   }
 
   async function findCurrentMinted() {
