@@ -30,9 +30,8 @@
   let selected = false;
   let childNFTs = {};
   let childNFTarray = new Set();
-  let mergeMintBtn;
+  let numberOfSelected;
   let containMerged = false;
-  let ownedTokensLength;
 
   function toggle(event) {
     // selected =!selected;
@@ -56,10 +55,10 @@
     } else if (!childNFTs[event.currentTarget.id]) {
       childNFTarray.delete(event.currentTarget.id);
     }
-    mergeMintBtn = childNFTarray.size;
+    numberOfSelected = childNFTarray.size;
     console.log("childNFTarray", ...childNFTarray);
-    console.log("childNFTarray.size is", mergeMintBtn);
-    console.log("childNFTarray.size equals one: bool", mergeMintBtn == 1);
+    console.log("childNFTarray.size is", numberOfSelected);
+    console.log("childNFTarray.size equals one: bool", numberOfSelected == 1);
     containMerged = false;
     for (let i = 0; i < childNFTarray.size; i++) {
       if (Array.from(childNFTarray)[i] > 10000) {
@@ -125,6 +124,8 @@
   async function mint() {
     await contractWithSigner.mint(account, bElementId, 1, "0x00");
     loading = true;
+    numberOfSelected = 0;
+    childNFTs = {}; //Clear selection
     contractWithSigner.on("Minted", (to, tokenId, amount, event) => {
       minted = true;
       loading = false;
@@ -138,6 +139,8 @@
 
     await contractWithSigner.merge(account, Array.from(childNFTarray), "0x00");
     loading = true;
+    numberOfSelected = 0;
+    childNFTs = {}; //Clear selection
     contractWithSigner.on("Minted", (to, tokenId, amount, event) => {
       minted = true;
       loading = false;
@@ -162,6 +165,8 @@
         "0x00"
       );
       loading = true;
+      numberOfSelected = 0;
+      childNFTs = {}; //Clear selection
       contractWithSigner.on("Split", (to, id, event) => {
         minted = true;
         loading = false;
@@ -174,6 +179,8 @@
   }
 
   async function findCurrentOwned() {
+    numberOfSelected = 0;
+    childNFTs = {}; //Clear selection
     const numberOfTokensOwned = await contract.balanceOf(account, 1);
     console.log("numberOfTokensMinted", numberOfTokensOwned.toNumber());
     // for (let i = 0; i < Number(numberOfTokensOwned); i++) {
@@ -213,12 +220,9 @@
     }
 
     // }
-    ownedTokens = ownedTokens;
-    ownedTokensLength = ownedTokens.length;
-    mergeMintBtn = 0; //Clear button status
-    childNFTs = {}; //Clear selection
+    ownedTokens = ownedTokens; //Clear button status
 
-    console.log("ownedTokens, ownedTokensLength, mergeMintBtn, childNFTs", ownedTokens, ownedTokensLength, mergeMintBtn, childNFTs);
+    console.log("ownedTokens, numberOfSelected, childNFTs", ownedTokens, numberOfSelected, childNFTs);
 
   }
 
@@ -307,7 +311,6 @@
           <li>Token symbol: {tokenSymbol}</li>
           <li>Token decimal: 0</li>
         </ul>
-        <p>Please refresh this page to see your tokens here.</p>
       {/if}
 
       <form on:submit|preventDefault={mint}>
@@ -333,14 +336,14 @@
       <h2>Your Tokens:</h2>
       {#if ownedTokens}
         <section>
-          {#if mergeMintBtn == 1}
+          {#if numberOfSelected == 1}
             <button disabled on:click={merge}>Merge: Select More</button>
             {#if Array.from(childNFTarray)[0] > 10000}
               <button on:click={split}>Split</button>
             {:else}
               <button disabled on:click={split}>Split: Merged item only</button>
             {/if}
-          {:else if mergeMintBtn == 0}
+          {:else if numberOfSelected == 0}
             <button disabled on:click={merge}>Merge: Not Selected</button>
             <button disabled on:click={split}>Split: Not Selected</button>
           {:else}

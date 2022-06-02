@@ -94,6 +94,10 @@ button:focus {
     rgba(50, 151, 211, 0.3) 0 0 0 4px;
 }
 
+button:hover:enabled {
+  background-color: #A78BFA;
+}
+
 header {
   display: flex;
   justify-content: space-between;
