@@ -49,10 +49,10 @@
 
   onMount(() => {
     chain = ethereum.chainId;
-    account = ethereum.selectedAddress;
-    console.log("1 chain is ", chain);
-    console.log("1 account is ", account);
-    console.log("1 selectedAddress is ", ethereum.selectedAddress);
+    account = ethereum.selectedAddress;//
+    console.log("1 chain is ", chain);//
+    console.log("1 account is ", account);//
+    console.log("1 selectedAddress is ", ethereum.selectedAddress);//
   });
 
   // If Metamask is installed
@@ -83,7 +83,8 @@
     console.log('account ', account);
     console.log('ethereum.selectedAddress ', ethereum.selectedAddress);
     console.log('if ', (!account && ethereum.selectedAddress));
-    if (!(account && ethereum.selectedAddress)) {
+    if (!account && ethereum.selectedAddress) {
+    // if (!(account && ethereum.selectedAddress)) {
       account = ethereum.selectedAddress;
     }
 
@@ -296,7 +297,7 @@
   {#if ethereum}
     {#if account}
       <h1>👋 Welcome to the Cloudflare Web3 app</h1>
-      <h2>You are currently logged in as {account.slice(0, 5)}</h2>
+      <h2>You are currently logged in as {account.slice(0, 4) + ".." + account.slice(-4, account.length)}</h2>
       {#if loading}
         <p>Transaction processing...</p>
       {/if}
