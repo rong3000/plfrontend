@@ -112,13 +112,4 @@ async function getOwned(contract, account) {
     return owned;
 }
 
-// 📁 say.js
-function sayHi(user) {
-    console.log(`Hello, ${user}!`);
-}
-
-function sayBye(user) {
-    console.log(`Bye, ${user}!`);
-}
-
-export { getOwned, sayHi, sayBye }; //export list of variants
+export { getOwned }; //export list of variants

@@ -2,15 +2,9 @@
   import { ethers } from "ethers";
   import { onMount } from "svelte";
   import Contract from "./PL1155.json";
-  import { getOwned, sayHi, sayBye } from "./getOwned";
+  import { getOwned } from "./getOwned";
 
-  // const CONTRACT_ID = "0x26c1a3Bca442fe4517437d139779bf1cc153EecB";
-  // const CONTRACT_ID = "0xF8bB3f6e2502325B21E7abD98f3132a022C9B260";
-  // const CONTRACT_ID = "0xc4a805Feb788010EDdD940D9B88F7C08723AD101";
-  // const CONTRACT_ID = "0x30fD288439231Bf31C6f73562496112773CEcDC0";
-  // const CONTRACT_ID = "0x29F5eb891F5229346F4995D9De74590cDf565fAD";
-  // const CONTRACT_ID = "0x92AB5aBa441674FD59aeb63Ee3282851567b63a1";
-  const CONTRACT_ID = "0x8Ef0879e5bBcf5edf18B0C03D4DF858Ac07D3408";
+  const CONTRACT_ID = "0x8Ef0879e5bBcf5edf18B0C03D4DF858Ac07D3408"; //to be changed after contract deployed
 
   const ethereum = window.ethereum;
 
@@ -25,40 +19,26 @@
   let ownedTokens = [];
   let recentlyMintedTokens = [];
   let openseaContractLink =
-    "https://testnets.opensea.io/assets/0x92AB5aBa441674FD59aeb63Ee3282851567b63a1/";
+    "https://testnets.opensea.io/assets/0x92AB5aBa441674FD59aeb63Ee3282851567b63a1/"; //to be changed after contract deployed
   let tokenSymbol = "PL";
-  let selected = false;
   let childNFTs = {};
   let childNFTarray = new Set();
   let numberOfSelected;
   let containMerged = false;
 
+  // console.log("first childNFTs[token.id] is ", childNFTs[1]);
+
   function toggle(event) {
-    // selected =!selected;
-    // childNFTs[event.currentTarget.id] = selected;
     childNFTs[event.currentTarget.id] = !childNFTs[event.currentTarget.id];
-    // console.log(
-    //   "selected",
-    //   selected,
-    //   "event target",
-    //   event.target,
-    //   "event",
-    //   event,
-    //   "event current target",
-    //   event.currentTarget,
-    //   "event current target id",
-    //   event.currentTarget.id
-    // );
-    console.log("childNFTs", childNFTs);
+    console.log("childNFTs", childNFTs); //console.log
     if (childNFTs[event.currentTarget.id]) {
       childNFTarray.add(event.currentTarget.id);
     } else if (!childNFTs[event.currentTarget.id]) {
       childNFTarray.delete(event.currentTarget.id);
     }
     numberOfSelected = childNFTarray.size;
-    console.log("childNFTarray", ...childNFTarray);
-    console.log("childNFTarray.size is", numberOfSelected);
-    console.log("childNFTarray.size equals one: bool", numberOfSelected == 1);
+    console.log("childNFTarray", ...childNFTarray); //console.log
+    console.log("childNFTarray.size is", numberOfSelected); //console.log
     containMerged = false;
     for (let i = 0; i < childNFTarray.size; i++) {
       if (Array.from(childNFTarray)[i] > 10000) {
@@ -68,8 +48,11 @@
   }
 
   onMount(() => {
-    chain = window.ethereum.networkVersion;
-    console.log("--------------minted", minted);
+    chain = ethereum.chainId;
+    account = ethereum.selectedAddress;
+    console.log("1 chain is ", chain);
+    console.log("1 account is ", account);
+    console.log("1 selectedAddress is ", ethereum.selectedAddress);
   });
 
   // If Metamask is installed
@@ -89,13 +72,24 @@
       window.location.reload();
     });
 
+
+    console.log("2 chain is ", chain);
+    console.log("2 account is ", account);
+
     init();
   }
 
   async function init() {
-    if (!account && ethereum.selectedAddress) {
+    console.log('account ', account);
+    console.log('ethereum.selectedAddress ', ethereum.selectedAddress);
+    console.log('if ', (!account && ethereum.selectedAddress));
+    if (!(account && ethereum.selectedAddress)) {
       account = ethereum.selectedAddress;
     }
+
+    console.log("3 chain is ", chain);
+    console.log("3 account is ", account);
+    console.log("3 selectedAddress is ", ethereum.selectedAddress);
 
     if (account) {
       findCurrentOwned();
@@ -112,14 +106,6 @@
     account = accounts[0];
     init();
   }
-
-  // async function disconnect() {
-  //   accounts[0] = null;
-  //   alert('ha');
-  //   account = null;
-  //   alert('ha');
-  //   init();
-  // }
 
   async function mint() {
     await contractWithSigner.mint(account, bElementId, 1, "0x00");
@@ -228,7 +214,6 @@
 
   async function findCurrentMinted() {
     const total = await contract.MAX_MINTS();
-    sayHi("uri");
     // const ownedToken = await getOwned(contract, account);
     // console.log("ownedToken is: ", ownedToken);
     const supply = await contract.totalSupply(1);
@@ -238,18 +223,26 @@
   }
 
   async function fetchRecentlyMinted() {
+
     let recentMintEvents = await contract.queryFilter({
       topics: [
         "0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62",
       ],
     });
+    
+    console.log("looking for selectedAddress 1 ", ethereum.selectedAddress);
+    if (ethereum.selectedAddress) {
+      window.location.reload();
+    } //if
 
     recentMintEvents = recentMintEvents.slice(-3);
 
     await recentMintEvents.map(async (MintEvent) => {
       const token = MintEvent.args.id;
       console.log("token id is ", token);
+
       const URI = await contract.uri(token);
+
       const mergedURI = URI.slice(0, -4) + token.toNumber();
       console.log("URI is ", mergedURI);
 
@@ -263,12 +256,18 @@
         console.log(error);
       }
 
+
       const result = await response.json();
       result.id = token;
 
       recentlyMintedTokens.push(result);
       recentlyMintedTokens = recentlyMintedTokens;
     });
+
+    chain = ethereum.chainId;
+    console.log("4 chain is ", chain);
+    console.log("4 account is ", account);
+    console.log("4 selectedAddress is ", ethereum.selectedAddress);
   }
 </script>
 
@@ -282,11 +281,11 @@
   </ul>
 </header>
 
-{#if chain === "4"}
+{#if chain === "0x4"}
   <div class="warning">
     This marketplace is connected to the Rinkeby test network.
   </div>
-{:else}
+{:else if chain != "0x4"}
   <div class="error">
     This application requires you to be on the Rinkeby network. Use Metamask to
     switch networks.
@@ -419,7 +418,7 @@
   {:else}
     <h1>This app requires a Metamask wallet.</h1>
     <p>
-      You won't be asked to add any money. Install Metamask
+      Install Metamask
       <a href="https://metamask.io/">here</a>.
     </p>
   {/if}
