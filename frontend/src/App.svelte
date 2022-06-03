@@ -109,6 +109,7 @@
   }
 
   async function mint() {
+    minted = false;
     await contractWithSigner.mint(account, bElementId, 1, "0x00");
     loading = true;
     numberOfSelected = 0;
@@ -122,7 +123,8 @@
   }
 
   async function merge() {
-    console.log("merge1?");
+    console.log("merge1?");//
+    minted = false;
 
     await contractWithSigner.merge(account, Array.from(childNFTarray), "0x00");
     loading = true;
@@ -144,7 +146,8 @@
     );
 
     if (childNFTarray.size == 1 && Array.from(childNFTarray)[0] > 10000) {
-      console.log("can split");
+      console.log("can split");//
+      minted = false;
 
       await contractWithSigner.split(
         account,
@@ -273,31 +276,33 @@
 </script>
 
 <header>
-  <a href="/">Cloudflare Web3</a>
+  <a href="/">Poo</a>
   <ul>
     <li>
       <a href="https://testnets.opensea.io/collection/cfnft">View on OpenSea</a>
+      <!-- to be updated after deployed -->
     </li>
-    <li><a href="https://github.com/signalnerve/cfweb3">GitHub</a></li>
   </ul>
 </header>
 
 {#if chain === "0x4"}
   <div class="warning">
-    This marketplace is connected to the Rinkeby test network.
+    This application is connected to the Rinkeby test network.
   </div>
+  <!-- to be updated after deployed -->
 {:else if chain != "0x4"}
   <div class="error">
     This application requires you to be on the Rinkeby network. Use Metamask to
     switch networks.
   </div>
+  <!-- to be updated after deployed -->
 {/if}
 
 <main>
   {#if ethereum}
     {#if account}
-      <h1>👋 Welcome to the Cloudflare Web3 app</h1>
-      <h2>You are currently logged in as {account.slice(0, 4) + ".." + account.slice(-4, account.length)}</h2>
+      <h1>Welcome to the Poo app</h1>
+      <h2>You have logged in as {account.slice(0, 4) + ".." + account.slice(-4, account.length)}</h2>
       {#if loading}
         <p>Transaction processing...</p>
       {/if}
@@ -328,6 +333,7 @@
           <button type="submit">Mint</button>
         {/if}
       </form>
+      <!-- need redo for new contract. Need to limit max per id, not limiting total -->
 
       <section>
         <span>{currentMinted} / {maxMints} minted</span>
@@ -359,10 +365,7 @@
             {/if}
             <button disabled on:click={split}>Split: One at a time</button>
           {/if}
-          <!-- <button on:click={merge}>Merge</button>
-          <button on:click={split}>Split</button> -->
           <ul class="grid">
-            <!-- <select id="childTokens" multiple="multiple"> -->
             {#each ownedTokens as token}
               <li id={token.id} on:click={toggle}>
                 <label>
@@ -379,7 +382,6 @@
                 </div>
               </li>
             {/each}
-            <!-- </select> -->
           </ul>
         </section>
       {:else}
@@ -389,8 +391,8 @@
         </section>
       {/if}
     {:else}
-      <h1>👋 Welcome to Cloudflare Web3.</h1>
-      <h2>Login with Metamask to mint your NFT</h2>
+      <h1>Welcome to the Poo app</h1>
+      <h2>Login with Metamask to mint, merge or split your NFT</h2>
       <button on:click={login}>Login</button>
 
       <h2>Recently Minted NFTs:</h2>
@@ -403,6 +405,7 @@
                   <a
                     href={`https://testnets.opensea.io/assets/0x290422ec6eadc2cc12acd98c50333720382ca86b/${token.id}`}
                   >
+                  <!-- to be updated after deployed -->
                     <img src={token.image} alt={token.description} />
                   </a>
                 </div>
@@ -425,11 +428,13 @@
   {/if}
 </main>
 
-<footer>
-  Built with <a href="https://pages.dev">Pages</a>
+<footer>      
+  <a href="https://testnets.opensea.io/collection/cfnft">View on OpenSea</a>
+  <!-- to be updated after deployed -->
+  <!-- Built with <a href="https://pages.dev">Pages</a>
   and <a href="https://workers.dev">Workers</a>, and open-source
   <a href="https://github.com/cloudflare/cfweb3">on GitHub</a>.
   <a href="https://blog.cloudflare.com/get-started-web3"
     >Read the announcement blog post</a
-  >.
+  >. -->
 </footer>
