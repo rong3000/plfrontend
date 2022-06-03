@@ -26,8 +26,6 @@
   let numberOfSelected;
   let containMerged = false;
 
-  // console.log("first childNFTs[token.id] is ", childNFTs[1]);
-
   function toggle(event) {
     childNFTs[event.currentTarget.id] = !childNFTs[event.currentTarget.id];
     console.log("childNFTs", childNFTs); //console.log
@@ -38,7 +36,6 @@
     }
     numberOfSelected = childNFTarray.size;
     console.log("childNFTarray", ...childNFTarray); //console.log
-    console.log("childNFTarray.size is", numberOfSelected); //console.log
     containMerged = false;
     for (let i = 0; i < childNFTarray.size; i++) {
       if (Array.from(childNFTarray)[i] > 10000) {
@@ -49,10 +46,7 @@
 
   onMount(() => {
     chain = ethereum.chainId;
-    account = ethereum.selectedAddress;//
-    console.log("1 chain is ", chain);//
-    console.log("1 account is ", account);//
-    console.log("1 selectedAddress is ", ethereum.selectedAddress);//
+    account = ethereum.selectedAddress; //
   });
 
   // If Metamask is installed
@@ -72,25 +66,13 @@
       window.location.reload();
     });
 
-
-    console.log("2 chain is ", chain);
-    console.log("2 account is ", account);
-
     init();
   }
 
   async function init() {
-    console.log('account ', account);
-    console.log('ethereum.selectedAddress ', ethereum.selectedAddress);
-    console.log('if ', (!account && ethereum.selectedAddress));
     if (!account && ethereum.selectedAddress) {
-    // if (!(account && ethereum.selectedAddress)) {
       account = ethereum.selectedAddress;
     }
-
-    console.log("3 chain is ", chain);
-    console.log("3 account is ", account);
-    console.log("3 selectedAddress is ", ethereum.selectedAddress);
 
     if (account) {
       findCurrentOwned();
@@ -117,13 +99,12 @@
     contractWithSigner.on("Minted", (to, tokenId, amount, event) => {
       minted = true;
       loading = false;
-      console.log("amount", amount.toNumber());
+      console.log("amount", amount.toNumber()); //amount? need to change
       findCurrentOwned();
     });
   }
 
   async function merge() {
-    console.log("merge1?");//
     minted = false;
 
     await contractWithSigner.merge(account, Array.from(childNFTarray), "0x00");
@@ -133,65 +114,52 @@
     contractWithSigner.on("Minted", (to, tokenId, amount, event) => {
       minted = true;
       loading = false;
-      console.log("Merged id is ", tokenId.toNumber());
+      alert("Minted id for merged item is ", tokenId);
       findCurrentOwned();
     });
   }
 
   async function split() {
-    console.log(
-      "childNFTarray size and element ",
-      childNFTarray.size,
-      Array.from(childNFTarray)
+    minted = false;
+
+    await contractWithSigner.split(
+      account,
+      Array.from(childNFTarray)[0],
+      "0x00"
     );
-
-    if (childNFTarray.size == 1 && Array.from(childNFTarray)[0] > 10000) {
-      console.log("can split");//
-      minted = false;
-
-      await contractWithSigner.split(
-        account,
-        Array.from(childNFTarray)[0],
-        "0x00"
-      );
-      loading = true;
-      numberOfSelected = 0;
-      childNFTs = {}; //Clear selection
-      contractWithSigner.on("Split", (to, id, event) => {
-        minted = true;
-        loading = false;
-        console.log("Split ", id.toNumber());
+    loading = true;
+    numberOfSelected = 0;
+    childNFTs = {}; //Clear selection
+    contractWithSigner.on("Split", (to, id, event) => {
+      minted = true;
+      loading = false;
+      alert("Selected merged item id" + id + "is now split.");
       findCurrentOwned();
-      });
-    } else {
-      console.log("Can only select one merged element to split");
-    }
+    });
   }
 
   async function findCurrentOwned() {
     numberOfSelected = 0;
     childNFTs = {}; //Clear selection
-    const numberOfTokensOwned = await contract.balanceOf(account, 1);
-    console.log("numberOfTokensMinted", numberOfTokensOwned.toNumber());
-    // for (let i = 0; i < Number(numberOfTokensOwned); i++) {
+    const numberOfTokensOwned = await contract.balanceOf(account, 1);//rewrite
+    console.log("numberOfTokensMinted", numberOfTokensOwned.toNumber());//
 
     childNFTarray.clear();
     let ownedToken = await getOwned(contract, account);
-    console.log("ownedToken is: ", ownedToken);
-    console.log("childNFTarray is cleared ", childNFTarray);
+    console.log("ownedToken is: ", ownedToken);//
+    console.log("childNFTarray is cleared ", childNFTarray);//
 
     ownedTokens = [];
-    console.log("resetted ownedToken is ", ownedTokens);
-    
+    console.log("resetted ownedToken is ", ownedTokens);//
+
     for (let i = 0; i < ownedToken.length; i++) {
-      console.log("fetching ", i);
-      // const token = await contract.mintedTokenOfOwnerByIndex(account, i);
+      console.log("fetching ", i);//
       const URI = await contract.uri(ownedToken[i].id);
-      const mergedURI = URI.slice(0, -4) + ownedToken[i].id;
+      const mergedURI = URI.slice(0, -4) + ownedToken[i].id; //rewrite
       // const originalURI = URI
       // console.log("original URI is ", URI);
       // const mergedURI = URI.slice(0, -4);
-      console.log("merged URI is ", mergedURI);
+      console.log("merged URI is ", mergedURI);//
       let response;
       try {
         response = await fetch(
@@ -199,7 +167,7 @@
         );
         // response = await fetch(URI);
       } catch (error) {
-        console.log(error);
+        console.log(error);//alert or console
       }
 
       const result = await response.json();
@@ -211,30 +179,24 @@
 
     // }
     ownedTokens = ownedTokens; //Clear button status
-
-    console.log("ownedTokens, numberOfSelected, childNFTs", ownedTokens, numberOfSelected, childNFTs);
-
   }
 
   async function findCurrentMinted() {
     const total = await contract.MAX_MINTS();
-    // const ownedToken = await getOwned(contract, account);
-    // console.log("ownedToken is: ", ownedToken);
     const supply = await contract.totalSupply(1);
 
     maxMints = Number(total);
     currentMinted = Number(supply);
-  }
+  }//rewrite or delete
 
   async function fetchRecentlyMinted() {
-
     let recentMintEvents = await contract.queryFilter({
       topics: [
         "0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62",
       ],
     });
-    
-    console.log("looking for selectedAddress 1 ", ethereum.selectedAddress);
+
+    console.log("looking for selectedAddress 1 ", ethereum.selectedAddress);//
     if (ethereum.selectedAddress) {
       window.location.reload();
     } //if
@@ -243,12 +205,12 @@
 
     await recentMintEvents.map(async (MintEvent) => {
       const token = MintEvent.args.id;
-      console.log("token id is ", token);
+      console.log("token id is ", token);//
 
       const URI = await contract.uri(token);
 
       const mergedURI = URI.slice(0, -4) + token.toNumber();
-      console.log("URI is ", mergedURI);
+      console.log("URI is ", mergedURI);//
 
       let response;
       try {
@@ -257,9 +219,8 @@
         );
         // response = await fetch(URI);
       } catch (error) {
-        console.log(error);
+        console.log(error);//console or delete
       }
-
 
       const result = await response.json();
       result.id = token;
@@ -269,9 +230,6 @@
     });
 
     chain = ethereum.chainId;
-    console.log("4 chain is ", chain);
-    console.log("4 account is ", account);
-    console.log("4 selectedAddress is ", ethereum.selectedAddress);
   }
 </script>
 
@@ -302,7 +260,11 @@
   {#if ethereum}
     {#if account}
       <h1>Welcome to the Poo app</h1>
-      <h2>You have logged in as {account.slice(0, 4) + ".." + account.slice(-4, account.length)}</h2>
+      <h2>
+        You have logged in as {account.slice(0, 4) +
+          ".." +
+          account.slice(-4, account.length)}
+      </h2>
       {#if loading}
         <p>Transaction processing...</p>
       {/if}
@@ -405,7 +367,7 @@
                   <a
                     href={`https://testnets.opensea.io/assets/0x290422ec6eadc2cc12acd98c50333720382ca86b/${token.id}`}
                   >
-                  <!-- to be updated after deployed -->
+                    <!-- to be updated after deployed -->
                     <img src={token.image} alt={token.description} />
                   </a>
                 </div>
@@ -428,7 +390,7 @@
   {/if}
 </main>
 
-<footer>      
+<footer>
   <a href="https://testnets.opensea.io/collection/cfnft">View on OpenSea</a>
   <!-- to be updated after deployed -->
   <!-- Built with <a href="https://pages.dev">Pages</a>
