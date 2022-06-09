@@ -25,6 +25,10 @@
   let childNFTarray = new Set();
   let numberOfSelected;
   let containMerged = false;
+  let loadedNFT = {
+    "loadedNFT" : 0,
+    "total" : 0
+  };
 
   function toggle(event) {
     childNFTs[event.currentTarget.id] = !childNFTs[event.currentTarget.id];
@@ -153,6 +157,8 @@
     console.log("resetted ownedToken is ", ownedTokens);//
 
     for (let i = 0; i < ownedToken.length; i++) {
+      loadedNFT.total = ownedToken.length;
+      loadedNFT.loadedNFT += 1;
       console.log("fetching ", i);//
       const URI = await contract.uri(ownedToken[i].id);
       const mergedURI = URI.slice(0, -4) + ownedToken[i].id; //rewrite
@@ -176,6 +182,8 @@
         ownedTokens.push(result);
       }
     }
+    loadedNFT.total = 0;
+    loadedNFT.loadedNFT = 0;
 
     // }
     ownedTokens = ownedTokens; //Clear button status
@@ -302,6 +310,9 @@
       </section>
 
       <h2>Your Tokens:</h2>
+      {#if loadedNFT.total > 0}
+        Loading {loadedNFT.loadedNFT} out of {loadedNFT.total} tokens...
+      {/if}
       {#if ownedTokens}
         <section>
           {#if numberOfSelected == 1}
