@@ -27,8 +27,9 @@
   let containMerged = false;
   let loadedNFT = {
     "loadedNFT" : 0,
-    "total" : 0
+    "total" : -1
   };
+  // let loadedNFTtotal = -1;
 
   function toggle(event) {
     childNFTs[event.currentTarget.id] = !childNFTs[event.currentTarget.id];
@@ -148,17 +149,22 @@
     const numberOfTokensOwned = await contract.balanceOf(account, 1);//rewrite
     console.log("numberOfTokensMinted", numberOfTokensOwned.toNumber());//
 
+    loadedNFT.total = -1;
+    console.log("try finding out how many token owned");//
     childNFTarray.clear();
     let ownedToken = await getOwned(contract, account);
     console.log("ownedToken is: ", ownedToken);//
+    // loadedNFT.total = ownedToken.length;
+
     console.log("childNFTarray is cleared ", childNFTarray);//
 
     ownedTokens = [];
-    console.log("resetted ownedToken is ", ownedTokens);//
-
+    console.log("resetted ownedTokens is ", ownedTokens);//
+    
     for (let i = 0; i < ownedToken.length; i++) {
+      loadedNFT.loadedNFT = i + 1;
       loadedNFT.total = ownedToken.length;
-      loadedNFT.loadedNFT += 1;
+      // loadedNFTtotal = ownedToken.length;
       console.log("fetching ", i);//
       const URI = await contract.uri(ownedToken[i].id);
       const mergedURI = URI.slice(0, -4) + ownedToken[i].id; //rewrite
@@ -182,11 +188,15 @@
         ownedTokens.push(result);
       }
     }
-    loadedNFT.total = 0;
     loadedNFT.loadedNFT = 0;
 
-    // }
     ownedTokens = ownedTokens; //Clear button status
+    if (ownedToken.length == 0) {
+      loadedNFT.total = -2;
+    } else {
+      loadedNFT.total = -1;
+    }
+    // loadedNFTtotal = -1;
   }
 
   async function findCurrentMinted() {
@@ -311,9 +321,10 @@
 
       <h2>Your Tokens:</h2>
       {#if loadedNFT.total > 0}
-        Loading {loadedNFT.loadedNFT} out of {loadedNFT.total} tokens...
+      <!-- {#if loadedNFTtotal > 0} -->
+        You own {loadedNFT.total} tokens, loading {loadedNFT.loadedNFT}...
       {/if}
-      {#if ownedTokens}
+      {#if ownedTokens.length > 0}
         <section>
           {#if numberOfSelected == 1}
             <button disabled on:click={merge}>Merge: Select More</button>
@@ -357,10 +368,16 @@
             {/each}
           </ul>
         </section>
-      {:else}
+      <!-- {:else if loadedNFT.total = 0} -->
+      {:else if ownedTokens.length == 0 && loadedNFT.total == -2}
         <section>
           You don't have any tokens. Mint one with the button above to add it to
           your collection.
+        </section>
+      <!-- {:else if loadedNFT.total = -1} -->
+      {:else if loadedNFT.total == -1}
+        <section>
+          Checking how many token you own...
         </section>
       {/if}
     {:else}
