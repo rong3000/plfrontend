@@ -95,16 +95,45 @@
     init();
   }
 
+//   contract.someMethod(1, 2, 3).then((result) => {
+// }, (error) => {
+//     console.log(error);
+//     // error.reason - The Revert reason; this is what you probably care about. :)
+//     // Additionally:
+//     // - error.address - the contract address
+//     // - error.args - [ BigNumber(1), BigNumber(2), BigNumber(3) ] in this case
+//     // - error.method - "someMethod()" in this case
+//     // - error.errorSignature - "Error(string)" (the EIP 838 sighash; supports future custom errors)
+//     // - error.errorArgs - The arguments passed into the error (more relevant post EIP 838 custom errors)
+//     // - error.transaction - The call transaction used
+// });
+
   async function mint() {
     minted = false;
-    await contractWithSigner.mint(account, bElementId, 1, "0x00");
+    await contractWithSigner.mint(account, bElementId, 1, "0x00").then((result) => {}, (error) => {
+      console.log("logged required error is ", error);
+      console.log("logged required error.reason is ", error.reason);
+      console.log("logged required error.address is ", error.address);
+      console.log("logged required error.args is ", error.args);
+      console.log("logged required error.method is ", error.method);
+      console.log("logged required error.errorSignature is ", error.address);
+      console.log("logged required error.errorArgs is ", error.errorArgs);
+      console.log("logged required error.transaction is ", error.transaction);
+      console.log("logged required error.error is ", error.error);
+      console.log("logged required error.error.message is ", error.error.message);
+      alert(error.error.message);
+    });
     loading = true;
     numberOfSelected = 0;
     childNFTs = {}; //Clear selection
     contractWithSigner.on("Minted", (to, tokenId, amount, event) => {
       minted = true;
       loading = false;
-      console.log("amount", amount.toNumber()); //amount? need to change
+      console.log("to ", to); //amount? need to change
+      console.log("tokenId is ", tokenId.toNumber()); //amount? need to change
+      console.log("amount is ", amount.toNumber()); //amount? need to change
+      console.log("event is ", event); //amount? need to change
+      alert("tokenId is ${tokenId}"); //amount? need to change
       findCurrentOwned();
     });
   }
@@ -301,8 +330,8 @@
       <form on:submit|preventDefault={mint}>
         <input
           type="number"
-          min="1"
-          max="9999"
+          min="0"
+          max="10000"
           placeholder="Basic element id to mint"
           bind:value={bElementId}
         />
