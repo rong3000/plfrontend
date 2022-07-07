@@ -115,16 +115,6 @@
   async function mint() {
     minted = false;
     await contractWithSigner.mint(account, bElementId, 1, "0x00").then((result) => {}, (error) => {
-      console.log("logged required error is ", error);
-      console.log("logged required error.reason is ", error.reason);
-      console.log("logged required error.address is ", error.address);
-      console.log("logged required error.args is ", error.args);
-      console.log("logged required error.method is ", error.method);
-      console.log("logged required error.errorSignature is ", error.address);
-      console.log("logged required error.errorArgs is ", error.errorArgs);
-      console.log("logged required error.transaction is ", error.transaction);
-      console.log("logged required error.error is ", error.error);
-      console.log("logged required error.error.message is ", error.error.message);
       alert(error.error.message);
       errorCaught = true;
     });
@@ -152,7 +142,7 @@
 
   async function wlMint() {
     minted = false;
-    await contractWithSigner.mint(account, bElementId, 1, "0x00").then((result) => {}, (error) => {
+    await contractWithSigner.wlMint(account, bElementId, 1, "0x00").then((result) => {}, (error) => {
       alert(error.error.message);
       errorCaught = true;
     });

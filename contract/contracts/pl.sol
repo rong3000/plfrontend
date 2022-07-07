@@ -75,6 +75,19 @@ contract PL1155 is
         emit Minted(account, id, amount);
     }
 
+    function wlMint(
+        address account,
+        uint256 id,
+        uint256 amount,
+        bytes memory data
+    ) public onlyOwner {
+        require(id > 0, "Id cannot be 0");
+        require(id < 10000, "Id must be smaller than 10000");
+        _mint(account, id, amount, data);
+        emit Minted(account, id, amount);
+    }
+    //need to revise to verify signature then mint
+
     function permanentURI(string memory _value, uint256 _id) public onlyOwner {
         emit PermanentURI(_value, _id);
     }
