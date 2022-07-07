@@ -3,6 +3,7 @@
   import { onMount } from "svelte";
   import Contract from "./PL1155.json";
   import { getOwned } from "./getOwned";
+  import { signedInfo } from "./signatures.js";
 
   const CONTRACT_ID = "0x8Ef0879e5bBcf5edf18B0C03D4DF858Ac07D3408"; //to be changed after contract deployed
 
@@ -15,6 +16,7 @@
   let account = null;
   let minted = false;
   let loading = false;
+  let errorCaught = false;
   let bElementId = 1;
   let ownedTokens = [];
   let recentlyMintedTokens = [];
@@ -29,6 +31,7 @@
     "loadedNFT" : 0,
     "total" : -1
   };
+  let wl = false;
   // let loadedNFTtotal = -1;
 
   function toggle(event) {
@@ -82,6 +85,7 @@
     if (account) {
       findCurrentOwned();
       findCurrentMinted();
+      checkWhiteListed();
     } else {
       fetchRecentlyMinted();
     }
@@ -103,7 +107,7 @@
 //     // - error.address - the contract address
 //     // - error.args - [ BigNumber(1), BigNumber(2), BigNumber(3) ] in this case
 //     // - error.method - "someMethod()" in this case
-//     // - error.errorSignature - "Error(string)" (the EIP 838 sighash; supports future custom errors)
+//     // - Signature - "Error(string)" (the EIP 838 sighash; supports future custom errors)
 //     // - error.errorArgs - The arguments passed into the error (more relevant post EIP 838 custom errors)
 //     // - error.transaction - The call transaction used
 // });
@@ -122,8 +126,15 @@
       console.log("logged required error.error is ", error.error);
       console.log("logged required error.error.message is ", error.error.message);
       alert(error.error.message);
+      errorCaught = true;
     });
-    loading = true;
+    if (errorCaught) {
+      loading = false;
+    }
+    else {
+      loading = true;
+    }
+    errorCaught = false;
     numberOfSelected = 0;
     childNFTs = {}; //Clear selection
     contractWithSigner.on("Minted", (to, tokenId, amount, event) => {
@@ -133,7 +144,35 @@
       console.log("tokenId is ", tokenId.toNumber()); //amount? need to change
       console.log("amount is ", amount.toNumber()); //amount? need to change
       console.log("event is ", event); //amount? need to change
-      alert("tokenId is ${tokenId}"); //amount? need to change
+      alert("Minted tokenId is " + tokenId); //amount? need to change
+      findCurrentOwned();
+    });
+  }
+
+
+  async function wlMint() {
+    minted = false;
+    await contractWithSigner.mint(account, bElementId, 1, "0x00").then((result) => {}, (error) => {
+      alert(error.error.message);
+      errorCaught = true;
+    });
+    if (errorCaught) {
+      loading = false;
+    }
+    else {
+      loading = true;
+    }
+    errorCaught = false;
+    numberOfSelected = 0;
+    childNFTs = {}; //Clear selection
+    contractWithSigner.on("Minted", (to, tokenId, amount, event) => {
+      minted = true;
+      loading = false;
+      console.log("to ", to); //amount? need to change
+      console.log("tokenId is ", tokenId.toNumber()); //amount? need to change
+      console.log("amount is ", amount.toNumber()); //amount? need to change
+      console.log("event is ", event); //amount? need to change
+      alert("Minted tokenId is " + tokenId); //amount? need to change
       findCurrentOwned();
     });
   }
@@ -236,6 +275,14 @@
     currentMinted = Number(supply);
   }//rewrite or delete
 
+
+  function checkWhiteListed() {
+    console.log("array is ", signedInfo);
+    console.log("account is ", account);
+    wl = signedInfo.find(item => item.address.toLowerCase() === account.toLowerCase());
+    console.log("wl is ", wl);  
+  }//rewrite or delete
+
   async function fetchRecentlyMinted() {
     let recentMintEvents = await contract.queryFilter({
       topics: [
@@ -311,7 +358,12 @@
         You have logged in as {account.slice(0, 4) +
           ".." +
           account.slice(-4, account.length)}
-      </h2>
+      </h2>      
+      {#if wl}
+        <p>Congrats! Your account is whitelisted! You can mint {wl.number} tokens.</p>
+      {:else}
+        <p>Your account is not whitelisted.</p>
+      {/if}
       {#if loading}
         <p>Transaction processing...</p>
       {/if}
@@ -326,6 +378,21 @@
           <li>Token decimal: 0</li>
         </ul>
       {/if}
+
+      <form on:submit|preventDefault={wlMint}>
+        <input
+          type="number"
+          min="0"
+          max="10000"
+          placeholder="Basic element id to mint"
+          bind:value={bElementId}
+        />
+        {#if wl}
+          <button type="submit">Whitelist Mint</button>
+        {:else}
+          <button disabled type="submit">Whitelist Mint</button>
+        {/if}
+      </form>
 
       <form on:submit|preventDefault={mint}>
         <input
