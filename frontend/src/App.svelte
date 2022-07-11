@@ -28,8 +28,8 @@
   let numberOfSelected;
   let containMerged = false;
   let loadedNFT = {
-    "loadedNFT" : 0,
-    "total" : -1
+    loadedNFT: 0,
+    total: -1,
   };
   let wl = false;
   // let loadedNFTtotal = -1;
@@ -99,29 +99,61 @@
     init();
   }
 
-//   contract.someMethod(1, 2, 3).then((result) => {
-// }, (error) => {
-//     console.log(error);
-//     // error.reason - The Revert reason; this is what you probably care about. :)
-//     // Additionally:
-//     // - error.address - the contract address
-//     // - error.args - [ BigNumber(1), BigNumber(2), BigNumber(3) ] in this case
-//     // - error.method - "someMethod()" in this case
-//     // - Signature - "Error(string)" (the EIP 838 sighash; supports future custom errors)
-//     // - error.errorArgs - The arguments passed into the error (more relevant post EIP 838 custom errors)
-//     // - error.transaction - The call transaction used
-// });
+  //   contract.someMethod(1, 2, 3).then((result) => {
+  // }, (error) => {
+  //     console.log(error);
+  //     // error.reason - The Revert reason; this is what you probably care about. :)
+  //     // Additionally:
+  //     // - error.address - the contract address
+  //     // - error.args - [ BigNumber(1), BigNumber(2), BigNumber(3) ] in this case
+  //     // - error.method - "someMethod()" in this case
+  //     // - Signature - "Error(string)" (the EIP 838 sighash; supports future custom errors)
+  //     // - error.errorArgs - The arguments passed into the error (more relevant post EIP 838 custom errors)
+  //     // - error.transaction - The call transaction used
+  // });
 
   async function mint() {
     minted = false;
-    await contractWithSigner.mint(account, bElementId, 1, "0x00").then((result) => {}, (error) => {
-      alert(error.error.message);
-      errorCaught = true;
-    });
+
+    let response;
+      try {
+        response = await fetch(
+          "http://localhost:3000/api/ran/" + account
+        );
+        // response = await fetch(URI);
+      } catch (error) {
+        console.log(error); //alert or console
+      }
+
+      const result = await response.json();
+      console.log('result is ', result);
+
+    // await fetch("https://rannumber.herokuapp.com/api/ran/" + account,
+    // await fetch("http://localhost:3000/api/ran/" + account)
+    //   .then((response) => {
+    //     response.text();
+    //     console.log('response is ', response);
+    //   })
+    //   .then((text) => {
+    //     console.log('text is ', text);
+    //     let obj = JSON.parse(text);
+    //     console.log('obj is ', obj);
+    //     contractWithSigner.mint(account, obj.number, 1, "0x00").then(
+    //       (result) => {},
+    //       (error) => {
+    //         alert(error.error.message);
+    //         errorCaught = true;
+    //       }
+    //     );
+    //   });
+
+    // await contractWithSigner.mint(account, obj.number, 1, "0x00").then((result) => {}, (error) => {
+    //   alert(error.error.message);
+    //   errorCaught = true;
+    // });
     if (errorCaught) {
       loading = false;
-    }
-    else {
+    } else {
       loading = true;
     }
     errorCaught = false;
@@ -139,17 +171,18 @@
     });
   }
 
-
   async function wlMint() {
     minted = false;
-    await contractWithSigner.wlMint(account, bElementId, 1, "0x00").then((result) => {}, (error) => {
-      alert(error.error.message);
-      errorCaught = true;
-    });
+    await contractWithSigner.wlMint(account, bElementId, 1, "0x00").then(
+      (result) => {},
+      (error) => {
+        alert(error.error.message);
+        errorCaught = true;
+      }
+    );
     if (errorCaught) {
       loading = false;
-    }
-    else {
+    } else {
       loading = true;
     }
     errorCaught = false;
@@ -204,32 +237,32 @@
   async function findCurrentOwned() {
     numberOfSelected = 0;
     childNFTs = {}; //Clear selection
-    const numberOfTokensOwned = await contract.balanceOf(account, 1);//rewrite
-    console.log("numberOfTokensMinted", numberOfTokensOwned.toNumber());//
+    const numberOfTokensOwned = await contract.balanceOf(account, 1); //rewrite
+    console.log("numberOfTokensMinted", numberOfTokensOwned.toNumber()); //
 
     loadedNFT.total = -1;
-    console.log("try finding out how many token owned");//
+    console.log("try finding out how many token owned"); //
     childNFTarray.clear();
     let ownedToken = await getOwned(contract, account);
-    console.log("ownedToken is: ", ownedToken);//
+    console.log("ownedToken is: ", ownedToken); //
     // loadedNFT.total = ownedToken.length;
 
-    console.log("childNFTarray is cleared ", childNFTarray);//
+    console.log("childNFTarray is cleared ", childNFTarray); //
 
     ownedTokens = [];
-    console.log("resetted ownedTokens is ", ownedTokens);//
-    
+    console.log("resetted ownedTokens is ", ownedTokens); //
+
     for (let i = 0; i < ownedToken.length; i++) {
       loadedNFT.loadedNFT = i + 1;
       loadedNFT.total = ownedToken.length;
       // loadedNFTtotal = ownedToken.length;
-      console.log("fetching ", i);//
+      console.log("fetching ", i); //
       const URI = await contract.uri(ownedToken[i].id);
       const mergedURI = URI.slice(0, -4) + ownedToken[i].id; //rewrite
       // const originalURI = URI
       // console.log("original URI is ", URI);
       // const mergedURI = URI.slice(0, -4);
-      console.log("merged URI is ", mergedURI);//
+      console.log("merged URI is ", mergedURI); //
       let response;
       try {
         response = await fetch(
@@ -237,7 +270,7 @@
         );
         // response = await fetch(URI);
       } catch (error) {
-        console.log(error);//alert or console
+        console.log(error); //alert or console
       }
 
       const result = await response.json();
@@ -263,15 +296,16 @@
 
     maxMints = Number(total);
     currentMinted = Number(supply);
-  }//rewrite or delete
-
+  } //rewrite or delete
 
   function checkWhiteListed() {
     console.log("array is ", signedInfo);
     console.log("account is ", account);
-    wl = signedInfo.find(item => item.address.toLowerCase() === account.toLowerCase());
-    console.log("wl is ", wl);  
-  }//rewrite or delete
+    wl = signedInfo.find(
+      (item) => item.address.toLowerCase() === account.toLowerCase()
+    );
+    console.log("wl is ", wl);
+  } //rewrite or delete
 
   async function fetchRecentlyMinted() {
     let recentMintEvents = await contract.queryFilter({
@@ -280,7 +314,7 @@
       ],
     });
 
-    console.log("looking for selectedAddress 1 ", ethereum.selectedAddress);//
+    console.log("looking for selectedAddress 1 ", ethereum.selectedAddress); //
     if (ethereum.selectedAddress) {
       window.location.reload();
     } //if
@@ -289,12 +323,12 @@
 
     await recentMintEvents.map(async (MintEvent) => {
       const token = MintEvent.args.id;
-      console.log("token id is ", token);//
+      console.log("token id is ", token); //
 
       const URI = await contract.uri(token);
 
       const mergedURI = URI.slice(0, -4) + token.toNumber();
-      console.log("URI is ", mergedURI);//
+      console.log("URI is ", mergedURI); //
 
       let response;
       try {
@@ -303,7 +337,7 @@
         );
         // response = await fetch(URI);
       } catch (error) {
-        console.log(error);//console or delete
+        console.log(error); //console or delete
       }
 
       const result = await response.json();
@@ -348,9 +382,11 @@
         You have logged in as {account.slice(0, 4) +
           ".." +
           account.slice(-4, account.length)}
-      </h2>      
+      </h2>
       {#if wl}
-        <p>Congrats! Your account is whitelisted! You can mint {wl.number} tokens.</p>
+        <p>
+          Congrats! Your account is whitelisted! You can mint {wl.number} tokens.
+        </p>
       {:else}
         <p>Your account is not whitelisted.</p>
       {/if}
@@ -407,7 +443,7 @@
 
       <h2>Your Tokens:</h2>
       {#if loadedNFT.total > 0}
-      <!-- {#if loadedNFTtotal > 0} -->
+        <!-- {#if loadedNFTtotal > 0} -->
         You own {loadedNFT.total} tokens, loading {loadedNFT.loadedNFT}...
       {/if}
       {#if ownedTokens.length > 0}
@@ -454,17 +490,15 @@
             {/each}
           </ul>
         </section>
-      <!-- {:else if loadedNFT.total = 0} -->
+        <!-- {:else if loadedNFT.total = 0} -->
       {:else if ownedTokens.length == 0 && loadedNFT.total == -2}
         <section>
           You don't have any tokens. Mint one with the button above to add it to
           your collection.
         </section>
-      <!-- {:else if loadedNFT.total = -1} -->
+        <!-- {:else if loadedNFT.total = -1} -->
       {:else if loadedNFT.total == -1}
-        <section>
-          Checking how many token you own...
-        </section>
+        <section>Checking how many token you own...</section>
       {/if}
     {:else}
       <h1>Welcome to the Poo app</h1>
