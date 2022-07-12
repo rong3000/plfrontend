@@ -83,9 +83,9 @@
     }
 
     if (account) {
+      checkWhiteListed();
       findCurrentOwned();
       findCurrentMinted();
-      checkWhiteListed();
     } else {
       fetchRecentlyMinted();
     }
@@ -115,42 +115,22 @@
   async function mint() {
     minted = false;
 
-    let response;
-      try {
-        response = await fetch(
-          "http://localhost:3000/api/ran/" + account
+    await fetch("https://rannumber.herokuapp.com/api/ran/" + account)
+      // await fetch("http://localhost:3000/api/ran/" + account)
+      .then((response) => {
+        return response.json();
+      })
+      .then((ran) => {
+        console.log("ran is ", ran);
+        contractWithSigner.mint(account, ran.number, 1, "0x00").then(
+          (result) => {},
+          (error) => {
+            alert(error.error.message);
+            errorCaught = true;
+          }
         );
-        // response = await fetch(URI);
-      } catch (error) {
-        console.log(error); //alert or console
-      }
+      });
 
-      const result = await response.json();
-      console.log('result is ', result);
-
-    // await fetch("https://rannumber.herokuapp.com/api/ran/" + account,
-    // await fetch("http://localhost:3000/api/ran/" + account)
-    //   .then((response) => {
-    //     response.text();
-    //     console.log('response is ', response);
-    //   })
-    //   .then((text) => {
-    //     console.log('text is ', text);
-    //     let obj = JSON.parse(text);
-    //     console.log('obj is ', obj);
-    //     contractWithSigner.mint(account, obj.number, 1, "0x00").then(
-    //       (result) => {},
-    //       (error) => {
-    //         alert(error.error.message);
-    //         errorCaught = true;
-    //       }
-    //     );
-    //   });
-
-    // await contractWithSigner.mint(account, obj.number, 1, "0x00").then((result) => {}, (error) => {
-    //   alert(error.error.message);
-    //   errorCaught = true;
-    // });
     if (errorCaught) {
       loading = false;
     } else {
@@ -203,33 +183,67 @@
   async function merge() {
     minted = false;
 
-    await contractWithSigner.merge(account, Array.from(childNFTarray), "0x00");
-    loading = true;
+    await contractWithSigner
+      .merge(account, Array.from(childNFTarray), "0x00")
+      .then(
+        (result) => {},
+        (error) => {
+          alert(error.error.message);
+          errorCaught = true;
+        }
+      );
+
+    if (errorCaught) {
+      loading = false;
+    } else {
+      loading = true;
+    }
+    errorCaught = false;
     numberOfSelected = 0;
     childNFTs = {}; //Clear selection
-    contractWithSigner.on("Minted", (to, tokenId, amount, event) => {
+    contractWithSigner.on("Merged", (to, tokenId, amount, event) => {
       minted = true;
       loading = false;
-      alert("Minted id for merged item is ", tokenId);
+      console.log("to ", to); //amount? need to change
+      console.log("tokenId is ", tokenId.toNumber()); //amount? need to change
+      console.log("amount is ", amount.toNumber()); //amount? need to change
+      console.log("event is ", event); //amount? need to change
+      alert("Minted merged tokenId is " + tokenId); //amount? need to change
       findCurrentOwned();
     });
+    // contractWithSigner.on("Minted", (to, tokenId, amount, event) => {
+    //   minted = true;
+    //   loading = false;
+    //   alert("Minted id for merged item is ", tokenId);
+    //   findCurrentOwned();
+    // });
   }
 
   async function split() {
     minted = false;
 
-    await contractWithSigner.split(
-      account,
-      Array.from(childNFTarray)[0],
-      "0x00"
-    );
-    loading = true;
+    await contractWithSigner
+      .split(account, Array.from(childNFTarray)[0], "0x00")
+      .then(
+        (result) => {},
+        (error) => {
+          alert(error.error.message);
+          errorCaught = true;
+        }
+      );
+
+    if (errorCaught) {
+      loading = false;
+    } else {
+      loading = true;
+    }
+    errorCaught = false;
     numberOfSelected = 0;
     childNFTs = {}; //Clear selection
     contractWithSigner.on("Split", (to, id, event) => {
       minted = true;
       loading = false;
-      alert("Selected merged item id" + id + "is now split.");
+      alert("Selected merged item id " + id + " is now split.");
       findCurrentOwned();
     });
   }
@@ -264,11 +278,22 @@
       // const mergedURI = URI.slice(0, -4);
       console.log("merged URI is ", mergedURI); //
       let response;
+      let fetchURI;
       try {
-        response = await fetch(
-          "https://sheltered-beach-35853.herokuapp.com/" + mergedURI
-        );
-        // response = await fetch(URI);
+        // response = await fetch(
+        //   "https://sheltered-beach-35853.herokuapp.com/" + mergedURI
+        // );
+        const { pathname } = new URL(mergedURI);
+        if (ownedToken[i].id < 10000) {
+          fetchURI =
+            // "http://127.0.0.1:9000/api/element/" + pathname.slice(13);
+            mergedURI;
+        } else {
+          fetchURI =
+            "http://metapython.herokuapp.com/api/merged/" + ownedToken[i].id;
+        }
+        console.log("fetching ", fetchURI);
+        response = await fetch(fetchURI);
       } catch (error) {
         console.log(error); //alert or console
       }
@@ -298,13 +323,28 @@
     currentMinted = Number(supply);
   } //rewrite or delete
 
-  function checkWhiteListed() {
-    console.log("array is ", signedInfo);
-    console.log("account is ", account);
-    wl = signedInfo.find(
-      (item) => item.address.toLowerCase() === account.toLowerCase()
+  async function checkWhiteListed() {
+    console.log(
+      "checking whitelist " +
+        "https://rannumber.herokuapp.com/api/wl/" +
+        account
     );
-    console.log("wl is ", wl);
+
+    await fetch("https://rannumber.herokuapp.com/api/wl/" + account)
+      // await fetch("http://localhost:3000/api/wl/" + account)
+      .then((response) => {
+        let resText = response.json();
+        console.log("wl response", resText);
+        return resText;
+      })
+      .then((whitelist) => {
+        console.log("whitelist is ", whitelist);
+        wl = whitelist;
+        console.log("wl is ", wl);
+      });
+    // wl = signedInfo.find(
+    //   (item) => item.address.toLowerCase() === account.toLowerCase()
+    // );
   } //rewrite or delete
 
   async function fetchRecentlyMinted() {
@@ -383,7 +423,7 @@
           ".." +
           account.slice(-4, account.length)}
       </h2>
-      {#if wl}
+      {#if wl && wl.number > 0}
         <p>
           Congrats! Your account is whitelisted! You can mint {wl.number} tokens.
         </p>
