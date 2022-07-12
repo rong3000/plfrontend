@@ -21,7 +21,8 @@ class SignHelper {
         const domain = await this._signingDomain()
         const types = {
             Web3Struct: [
-                { name: "id", type: "uint256" },
+                // { name: "id", type: "uint256" },
+                { name: "id", type: "string" },
                 { name: "number", type: "uint256" },
                 { name: "address", type: "address" }
             ]
@@ -63,7 +64,6 @@ class SignHelper {
 
 async function main() {
     let signedMessages = [];
-    let id = 1;
     for (let address of addresses) {
 
         // let { signature } = await SignHelper.getSign('0xd9145CCE52D386f254917e481eB44e9943F39138', 1, 4, 5, address)
@@ -72,20 +72,8 @@ async function main() {
         // let { signature } = await SignHelper.getSign('0x5AA693BdB0c2e92B5c62FEEf451A41E1e8c1b7AF', 4, 4, 5, address) //success rinkeby signed with chain id 4
         // let { signature } = await SignHelper.getSign('0xd9145CCE52D386f254917e481eB44e9943F39138', 1, 4, 5, address) //java signed with chain id 1 deployed 0x3A92e4F5D0eF0642A85c0772915C78380C7A1548
         // let { signature } = await SignHelper.getSign('0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8', 1, 4, 5, address) //java signed with chain id 1 deployed 0x74e2Be10DFf4e189c5CA9e605ee46547382e38E0
-        let { signature } = await SignHelper.getSign('0xb27A31f1b0AF2946B7F582768f03239b1eC07c2c', 1, 4, 5, address) //java signed with chain id 1 deployed 1548
-        
-
-        // signedMessages[address] = signature;
-
-        const coupon = {
-            "id": 4,
-            "number": 5,
-            "address": address,
-            "signature": signature
-        }
-
-        id++;
-
+        // let coupon = await SignHelper.getSign('0xb27A31f1b0AF2946B7F582768f03239b1eC07c2c', 1, 4, 5, address) //int
+        let coupon = await SignHelper.getSign('0xcD6a42782d230D7c13A74ddec5dD140e55499Df9', 1, "x", 5, address) //string
         signedMessages.push(coupon);
 
     }

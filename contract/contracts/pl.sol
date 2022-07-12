@@ -39,10 +39,10 @@ contract PL1155 is
     uint256 public MAX_MINTS = 204800;
     address proxyAddress = 0xF57B2c51dED3A29e6891aba85459d600256Cf317;
 
-    mapping(uint256 => uint256) public wlConsumed;
-    mapping(uint256 => uint256) public ranConsumed;
-    // mapping(string => uint256) public wlConsumed;
-    // mapping(string => uint256) public ranConsumed;
+    // mapping(uint256 => uint256) public wlConsumed;
+    // mapping(uint256 => uint256) public ranConsumed;
+    mapping(string => uint256) public wlConsumed;
+    mapping(string => uint256) public ranConsumed;
 
     event Minted(address to, uint256 tokenId, uint256 amount);
     event MintedBatch(address to, uint256[] ids, uint256[] amounts);
@@ -98,12 +98,12 @@ contract PL1155 is
         uint256 id,
         uint256 amount,
         bytes memory data,
-        // string memory wlId,
-        uint256 wlId,
+        string memory wlId,
+        // uint256 wlId,
         uint256 maxWLTokenNum,
         bytes memory wlSignature,
-        // string memory ranId,
-        uint256 ranId,
+        string memory ranId,
+        // uint256 ranId,
         uint256 randomNumber,
         bytes memory ranSignature
     ) public onlyOwner {
@@ -258,7 +258,8 @@ contract PL1155 is
     }
 
     function verify(
-        uint256 id,
+        // uint256 id,
+        string memory id,
         uint256 number,
         address minterAddress,
         bytes memory signature
@@ -267,9 +268,11 @@ contract PL1155 is
             keccak256(
                 abi.encode(
                     keccak256(
-                        "Web3Struct(uint256 id,uint256 number,address address)"
+                        // "Web3Struct(uint256 id,uint256 number,address address)"
+                        "Web3Struct(string id,uint256 number,address address)"
                     ),
-                    id,
+                    // id,
+                    keccak256(bytes(id)),
                     number,
                     minterAddress
                 )
