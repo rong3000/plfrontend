@@ -39,7 +39,10 @@ contract PL1155 is
     uint256 public MAX_MINTS = 204800;
     address proxyAddress = 0xF57B2c51dED3A29e6891aba85459d600256Cf317;
 
-    mapping(string => uint256) public wlConsumed;
+    mapping(uint256 => uint256) public wlConsumed;
+    mapping(uint256 => uint256) public ranConsumed;
+    // mapping(string => uint256) public wlConsumed;
+    // mapping(string => uint256) public ranConsumed;
 
     event Minted(address to, uint256 tokenId, uint256 amount);
     event MintedBatch(address to, uint256[] ids, uint256[] amounts);
@@ -48,16 +51,26 @@ contract PL1155 is
     event PermanentURI(string _value, uint256 indexed _id);
 
     address private _signerAddress;
+    address private _ranSignerAddress;
 
-    constructor(address signerAddress_)
+    constructor(address signerAddress_, address ranSignerAddress_)
         ERC1155("https://metapython.herokuapp.com/api/box/")
         EIP712(SIGNING_DOMAIN, SIGNATURE_VERSION)
     {
         _signerAddress = signerAddress_;
+        _ranSignerAddress = ranSignerAddress_;
     }
 
     function setURI(string memory newuri) public onlyOwner {
         _setURI(newuri);
+    }
+
+    function setSigner(address signerAddress_) public onlyOwner {
+        _signerAddress = signerAddress_;
+    }
+
+    function setRanSigner(address ranSignerAddress_) public onlyOwner {
+        _ranSignerAddress = ranSignerAddress_;
     }
 
     function setProxy(address _proxyAddress) public onlyOwner {
@@ -85,21 +98,34 @@ contract PL1155 is
         uint256 id,
         uint256 amount,
         bytes memory data,
-        string memory wlId,
-        uint256 maxWLTokenNum, 
-        bytes memory wlSignature
+        // string memory wlId,
+        uint256 wlId,
+        uint256 maxWLTokenNum,
+        bytes memory wlSignature,
+        // string memory ranId,
+        uint256 ranId,
+        uint256 randomNumber,
+        bytes memory ranSignature
     ) public onlyOwner {
-        require(
-            maxWLTokenNum >= wlConsumed[wlId] + 1,
-            "WL limit exceeded."
-        );
+        require(maxWLTokenNum >= wlConsumed[wlId] + 1, "WL limit exceeded.");
+        require(ranConsumed[ranId] < 1, "Random number already used.");
         require(id > 0, "Id cannot be 0");
         require(id < 10000, "Id must be smaller than 10000");
-        require(verify(wlId, maxWLTokenNum, msg.sender, wlSignature) == _signerAddress, "Voucher invalid");
+        require(
+            verify(wlId, maxWLTokenNum, msg.sender, wlSignature) ==
+                _signerAddress,
+            "Voucher invalid"
+        );
+        require(
+            verify(ranId, randomNumber, msg.sender, ranSignature) ==
+                _ranSignerAddress,
+            "Random number invalid"
+        );
 
-        _mint(account, id, amount, data);
-        emit Minted(account, id, amount);
+        _mint(msg.sender, randomNumber, 1, data);
+        emit Minted(msg.sender, randomNumber, 1);
         wlConsumed[wlId] += 1;
+        ranConsumed[ranId] += 1;
     }
 
     function wlMint(
@@ -232,7 +258,7 @@ contract PL1155 is
     }
 
     function verify(
-        string memory id,
+        uint256 id,
         uint256 number,
         address minterAddress,
         bytes memory signature
@@ -241,7 +267,7 @@ contract PL1155 is
             keccak256(
                 abi.encode(
                     keccak256(
-                        "Web3Struct(string id,uint256 number,address address)"
+                        "Web3Struct(uint256 id,uint256 number,address address)"
                     ),
                     id,
                     number,
@@ -250,5 +276,5 @@ contract PL1155 is
             )
         );
         return ECDSA.recover(digest, signature);
-    }
+    } //
 }
