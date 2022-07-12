@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./ERC1155URIStorage.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
+import "@openzeppelin/contracts/security/PullPayment.sol";
 
 contract PL1155 is
     ERC1155,
@@ -18,13 +19,15 @@ contract PL1155 is
     ERC1155Burnable,
     ERC1155Supply,
     ERC1155URIStorage,
-    EIP712
+    EIP712,
+    PullPayment
 {
     using ECDSA for bytes32;
 
     string storeMetaURL = "https://metapython.herokuapp.com/api/store/";
     string private constant SIGNING_DOMAIN = "PL"; //VIDEO
     string private constant SIGNATURE_VERSION = "1"; //VIDEO
+    uint public constant COST_PER_TOKEN_SET = 0.1 ether;//
 
     function contractURI() public view returns (string memory) {
         return storeMetaURL;
@@ -99,14 +102,13 @@ contract PL1155 is
         uint256 amount,
         bytes memory data,
         string memory wlId,
-        // uint256 wlId,
         uint256 maxWLTokenNum,
         bytes memory wlSignature,
         string memory ranId,
-        // uint256 ranId,
         uint256 randomNumber,
         bytes memory ranSignature
-    ) public onlyOwner {
+    ) public payable {
+        require(msg.value == COST_PER_TOKEN_SET, "Incorrect Ether amount.");
         require(maxWLTokenNum >= wlConsumed[wlId] + 1, "WL limit exceeded.");
         require(ranConsumed[ranId] < 1, "Random number already used.");
         require(id > 0, "Id cannot be 0");
@@ -126,6 +128,39 @@ contract PL1155 is
         emit Minted(msg.sender, randomNumber, 1);
         wlConsumed[wlId] += 1;
         ranConsumed[ranId] += 1;
+    }
+
+    function testWLVerifying(
+        string memory wlId,
+        uint256 maxWLTokenNum,
+        bytes memory wlSignature
+    ) public view onlyOwner returns (string memory) {
+        // require(
+        //     verify(wlId, maxWLTokenNum, msg.sender, wlSignature) ==
+        //         _signerAddress,
+        //     "Voucher invalid"
+        // );
+        if (
+            verify(wlId, maxWLTokenNum, msg.sender, wlSignature) ==
+            _signerAddress
+        ) {
+            return "verified";
+        } else {
+            return "invalid voucher";
+        }
+    }
+
+    function testRanVerifying(
+        string memory ranId,
+        uint256 randomNumber,
+        bytes memory ranSignature
+    ) public view onlyOwner returns (string memory) {
+        require(
+            verify(ranId, randomNumber, msg.sender, ranSignature) ==
+                _ranSignerAddress,
+            "Random number invalid"
+        );
+        return "verified";
     }
 
     function wlMint(
