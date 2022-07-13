@@ -1,0 +1,15 @@
+.\psql postgres://jnfjiorkiwpisn:6016ec366c4c94ffdc349592f11cddd8f0fe4c5aa97bce44d2b356fa86a22ee7@ec2-3-223-169-166.compute-1.amazonaws.com:5432/d32kveuo9b8bb4
+
+
+CREATE TABLE WL(
+   ID               CHAR(36) PRIMARY KEY     NOT NULL,
+   NUMBER           INT                      NOT NULL,
+   ADDRESS          CHAR(42)                 NOT NULL,
+   SIGNATURE        CHAR(132)                NOT NULL
+);
+
+SELECT * FROM signednumber3 WHERE ADDRESS = '0x7596758517c8519BC9B776220c8446fD4709f278' AND CONSUMED = 0
+DELETE FROM signednumber3 WHERE ADDRESS = '0x3A92e4F5D0eF0642A85c0772915C78380C7A1548' AND CONSUMED = 0
+UPDATE signednumber3 SET CONSUMED = result WHERE ID = ;
+DELETE FROM signednumber3;
+UPDATE signednumber3 SET CONSUMED = 1 WHERE ID = '956f75f3-0359-4594-a25c-230d17150f86';

@@ -8,6 +8,8 @@ const db = require('./src/database')
 
 const PORT = process.env.PORT || 3000
 
+const CONTRACT_ID = "0xf09dc5541149DC992C8E56E1b221B89e58A03eaf"; 
+
 const app = express()
   .set('port', PORT)
   .set('views', path.join(__dirname, 'views'))
@@ -171,7 +173,7 @@ class SignHelper {
 async function generateSignature(account) {
   let id = crypto.randomUUID().toString();
 
-  let coupon = await SignHelper.getSign('0xb7B6e6Eac54B6e9C53a75103D89c86dC0D6A180B', 4, id, 3, account) //success rinkeby signed with chain id 4
+  let coupon = await SignHelper.getSign(CONTRACT_ID, 4, id, 3, account) //success rinkeby signed with chain id 4
 
   return coupon;
 

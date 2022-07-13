@@ -5,8 +5,9 @@
   import { getOwned } from "./getOwned";
   import { signedInfo } from "./signatures.js";
 
-  const CONTRACT_ID = "0x8Ef0879e5bBcf5edf18B0C03D4DF858Ac07D3408"; //to be changed after contract deployed
-
+  // const CONTRACT_ID = "0x8Ef0879e5bBcf5edf18B0C03D4DF858Ac07D3408"; //to be changed after contract deployed
+  const CONTRACT_ID = "0xf09dc5541149DC992C8E56E1b221B89e58A03eaf"; //to be changed after contract deployed
+  
   const ethereum = window.ethereum;
 
   let chain, provider, signer, contract, contractWithSigner;
@@ -32,6 +33,7 @@
     total: -1,
   };
   let wl = false;
+  let wlminted = -1;
   // let loadedNFTtotal = -1;
 
   function toggle(event) {
@@ -122,7 +124,9 @@
       })
       .then((ran) => {
         console.log("ran is ", ran);
-        contractWithSigner.mint(account, ran.number, 1, "0x00").then(
+        
+        const options = {value: ethers.utils.parseEther("0.3")}
+        contractWithSigner.mint(ran.id, ran.number, ran.signature, options).then(
           (result) => {},
           (error) => {
             alert(error.error.message);
@@ -148,18 +152,32 @@
       console.log("event is ", event); //amount? need to change
       alert("Minted tokenId is " + tokenId); //amount? need to change
       findCurrentOwned();
+      findWLminted();
     });
   }
 
+
   async function wlMint() {
     minted = false;
-    await contractWithSigner.wlMint(account, bElementId, 1, "0x00").then(
-      (result) => {},
-      (error) => {
-        alert(error.error.message);
-        errorCaught = true;
-      }
-    );
+
+    await fetch("https://rannumber.herokuapp.com/api/ran/" + account)
+      // await fetch("http://localhost:3000/api/ran/" + account)
+      .then((response) => {
+        return response.json();
+      })
+      .then((ran) => {
+        console.log("ran is ", ran);
+        const options = {value: ethers.utils.parseEther("0.1")}
+
+        contractWithSigner.wlMint(wl.id, wl.number, wl.signature, ran.id, ran.number, ran.signature, options).then(
+          (result) => {},
+          (error) => {
+            alert(error.error.message);
+            errorCaught = true;
+          }
+        );
+      });
+
     if (errorCaught) {
       loading = false;
     } else {
@@ -177,6 +195,7 @@
       console.log("event is ", event); //amount? need to change
       alert("Minted tokenId is " + tokenId); //amount? need to change
       findCurrentOwned();
+      findWLminted();
     });
   }
 
@@ -246,6 +265,14 @@
       alert("Selected merged item id " + id + " is now split.");
       findCurrentOwned();
     });
+  }
+
+  async function findWLminted() {
+    
+    const wlmintedPromise = await contract.wlConsumed(wl.id);
+
+    wlminted = Number(wlmintedPromise);
+    console.log('wl consumed', wlminted);
   }
 
   async function findCurrentOwned() {
@@ -345,6 +372,8 @@
     // wl = signedInfo.find(
     //   (item) => item.address.toLowerCase() === account.toLowerCase()
     // );
+        
+    findWLminted();
   } //rewrite or delete
 
   async function fetchRecentlyMinted() {
@@ -425,7 +454,7 @@
       </h2>
       {#if wl && wl.number > 0}
         <p>
-          Congrats! Your account is whitelisted! You can mint {wl.number} tokens.
+          Congrats! Your account is whitelisted. {wlminted} / {wl.number} minted
         </p>
       {:else}
         <p>Your account is not whitelisted.</p>
@@ -446,14 +475,14 @@
       {/if}
 
       <form on:submit|preventDefault={wlMint}>
-        <input
+        <!-- <input
           type="number"
           min="0"
           max="10000"
           placeholder="Basic element id to mint"
           bind:value={bElementId}
-        />
-        {#if wl}
+        /> -->
+        {#if wl && wl.number > 0}
           <button type="submit">Whitelist Mint</button>
         {:else}
           <button disabled type="submit">Whitelist Mint</button>
@@ -461,13 +490,13 @@
       </form>
 
       <form on:submit|preventDefault={mint}>
-        <input
+        <!-- <input
           type="number"
           min="0"
           max="10000"
           placeholder="Basic element id to mint"
           bind:value={bElementId}
-        />
+        /> -->
 
         {#if currentMinted >= maxMints}
           <button disabled type="submit">Sold out</button>

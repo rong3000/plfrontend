@@ -57,7 +57,7 @@ contract PL1155 is
     address private _ranSignerAddress;
 
     constructor(address signerAddress_, address ranSignerAddress_)
-        ERC1155("https://metapython.herokuapp.com/api/box/")
+        ERC1155("https://metapython.herokuapp.com/api/element/")
         EIP712(SIGNING_DOMAIN, SIGNATURE_VERSION)
     {
         _signerAddress = signerAddress_;
@@ -97,24 +97,14 @@ contract PL1155 is
     }
 
     function mint(
-        string memory wlId,
-        uint256 maxWLTokenNum,
-        bytes memory wlSignature,
-
         string memory ranId,
         uint256 randomNumber,
         bytes memory ranSignature
     ) public payable {
-        require(msg.value == COST_PER_TOKEN_SET, "Incorrect Ether amount.");
-        require(maxWLTokenNum >= wlConsumed[wlId] + 1, "WL limit exceeded.");
+        require(msg.value == COST_PER_TOKEN_SET * 3, "Incorrect Ether amount.");
         require(ranConsumed[ranId] + 1 <= 1, "Random number already used.");
         require(randomNumber > 0, "Id cannot be 0");
         require(randomNumber < 10000, "Id must be smaller than 10000");
-        require(
-            verify(wlId, maxWLTokenNum, msg.sender, wlSignature) ==
-                _signerAddress,
-            "Voucher invalid"
-        );
         require(
             verify(ranId, randomNumber, msg.sender, ranSignature) ==
                 _ranSignerAddress,
@@ -123,7 +113,6 @@ contract PL1155 is
 
         _mint(msg.sender, randomNumber, 1, '0x00');
         emit Minted(msg.sender, randomNumber, 1);
-        wlConsumed[wlId] += 1;
         ranConsumed[ranId] += 1;
     }
 
@@ -161,15 +150,34 @@ contract PL1155 is
     }
 
     function wlMint(
-        address account,
-        uint256 id,
-        uint256 amount,
-        bytes memory data
-    ) public onlyOwner {
-        require(id > 0, "Id cannot be 0");
-        require(id < 10000, "Id must be smaller than 10000");
-        _mint(account, id, amount, data);
-        emit Minted(account, id, amount);
+        string memory wlId,
+        uint256 maxWLTokenNum,
+        bytes memory wlSignature,
+
+        string memory ranId,
+        uint256 randomNumber,
+        bytes memory ranSignature
+    ) public payable {
+        require(msg.value == COST_PER_TOKEN_SET, "Incorrect Ether amount.");
+        require(maxWLTokenNum >= wlConsumed[wlId] + 1, "WL limit exceeded.");
+        require(ranConsumed[ranId] + 1 <= 1, "Random number already used.");
+        require(randomNumber > 0, "Id cannot be 0");
+        require(randomNumber < 10000, "Id must be smaller than 10000");
+        require(
+            verify(wlId, maxWLTokenNum, msg.sender, wlSignature) ==
+                _signerAddress,
+            "Voucher invalid"
+        );
+        require(
+            verify(ranId, randomNumber, msg.sender, ranSignature) ==
+                _ranSignerAddress,
+            "Random number invalid"
+        );
+
+        _mint(msg.sender, randomNumber, 1, '0x00');
+        emit Minted(msg.sender, randomNumber, 1);
+        wlConsumed[wlId] += 1;
+        ranConsumed[ranId] += 1;
     }
 
     //need to revise to verify signature then mint
