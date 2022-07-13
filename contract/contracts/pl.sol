@@ -97,22 +97,19 @@ contract PL1155 is
     }
 
     function mint(
-        address account,
-        uint256 id,
-        uint256 amount,
-        bytes memory data,
         string memory wlId,
         uint256 maxWLTokenNum,
         bytes memory wlSignature,
+
         string memory ranId,
         uint256 randomNumber,
         bytes memory ranSignature
     ) public payable {
         require(msg.value == COST_PER_TOKEN_SET, "Incorrect Ether amount.");
         require(maxWLTokenNum >= wlConsumed[wlId] + 1, "WL limit exceeded.");
-        require(ranConsumed[ranId] < 1, "Random number already used.");
-        require(id > 0, "Id cannot be 0");
-        require(id < 10000, "Id must be smaller than 10000");
+        require(ranConsumed[ranId] + 1 <= 1, "Random number already used.");
+        require(randomNumber > 0, "Id cannot be 0");
+        require(randomNumber < 10000, "Id must be smaller than 10000");
         require(
             verify(wlId, maxWLTokenNum, msg.sender, wlSignature) ==
                 _signerAddress,
@@ -124,7 +121,7 @@ contract PL1155 is
             "Random number invalid"
         );
 
-        _mint(msg.sender, randomNumber, 1, data);
+        _mint(msg.sender, randomNumber, 1, '0x00');
         emit Minted(msg.sender, randomNumber, 1);
         wlConsumed[wlId] += 1;
         ranConsumed[ranId] += 1;
@@ -290,6 +287,16 @@ contract PL1155 is
         onlyOwner
     {
         _setTokenURI(tokenId, _tokenURI);
+    }
+
+    /// @dev Overridden in order to make it an onlyOwner function
+    function withdrawPayments(address payable payee)
+        public
+        virtual
+        override
+        onlyOwner
+    {
+        super.withdrawPayments(payee);
     }
 
     function verify(

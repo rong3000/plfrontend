@@ -73,7 +73,7 @@ async function main() {
         // let { signature } = await SignHelper.getSign('0xd9145CCE52D386f254917e481eB44e9943F39138', 1, 4, 5, address) //java signed with chain id 1 deployed 0x3A92e4F5D0eF0642A85c0772915C78380C7A1548
         // let { signature } = await SignHelper.getSign('0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8', 1, 4, 5, address) //java signed with chain id 1 deployed 0x74e2Be10DFf4e189c5CA9e605ee46547382e38E0
         // let coupon = await SignHelper.getSign('0xb27A31f1b0AF2946B7F582768f03239b1eC07c2c', 1, 4, 5, address) //int
-        let coupon = await SignHelper.getSign('0xcD6a42782d230D7c13A74ddec5dD140e55499Df9', 1, "x", 5, address) //string
+        let coupon = await SignHelper.getSign('0x7EF2e0048f5bAeDe046f6BF797943daF4ED8CB47', 1, "x", 5, address) //string
         signedMessages.push(coupon);
 
     }
