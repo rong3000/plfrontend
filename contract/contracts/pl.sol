@@ -44,7 +44,8 @@ contract PL1155 is
     using SafeMath for uint256;
 
     uint256 public MAX_MINTS = 204800;
-    address proxyAddress = 0xF57B2c51dED3A29e6891aba85459d600256Cf317;
+    address proxyAddress = 0x1E525EEAF261cA41b809884CBDE9DD9E1619573A;//rinkeby
+    // address proxyAddress = 0xa5409ec958c83c3f309868babaca7c86dcb077c1;//mainnet
 
     mapping(string => uint256) public wlConsumed;
     mapping(string => uint256) public ranConsumed;
@@ -80,9 +81,9 @@ contract PL1155 is
         proxyAddress = _proxyAddress;
     }
 
-    // function getProxy() public view onlyOwner returns (address) {
-    //     return proxyAddress;
-    // }
+    function getProxy() public view onlyOwner returns (address) {
+        return proxyAddress;
+    }
 
     function setMaxMints(uint256 max_mints) public onlyOwner {
         MAX_MINTS = max_mints;
