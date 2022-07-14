@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Burnable.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "./ERC1155URIStorage.sol";
+import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155URIStorage.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
 import "@openzeppelin/contracts/security/PullPayment.sol";
@@ -42,8 +42,6 @@ contract PL1155 is
     uint256 public MAX_MINTS = 204800;
     address proxyAddress = 0xF57B2c51dED3A29e6891aba85459d600256Cf317;
 
-    // mapping(uint256 => uint256) public wlConsumed;
-    // mapping(uint256 => uint256) public ranConsumed;
     mapping(string => uint256) public wlConsumed;
     mapping(string => uint256) public ranConsumed;
 
@@ -64,10 +62,6 @@ contract PL1155 is
     {
         _signerAddress = signerAddress_;
         _ranSignerAddress = ranSignerAddress_;
-    }
-
-    function setURI(string memory newuri) public onlyOwner {
-        _setURI(newuri);
     }
 
     function setSigner(address signerAddress_) public onlyOwner {
@@ -256,11 +250,18 @@ contract PL1155 is
         return super.uri(tokenId);
     }
 
-    function setTokenURI(uint256 tokenId, string memory _tokenURI)
+    function setURI(string memory newuri) public onlyOwner {
+        _setURI(newuri);
+    }
+
+    function setBaseURI(string memory baseURI) public onlyOwner {
+        _setBaseURI(baseURI);
+    }
+    function setTokenURI(uint256 tokenId, string memory tokenURI)
         public
         onlyOwner
     {
-        _setTokenURI(tokenId, _tokenURI);
+        _setURI(tokenId, tokenURI);
     }
 
     /// @dev Overridden in order to make it an onlyOwner function
