@@ -8,7 +8,7 @@ const db = require('./src/database')
 
 const PORT = process.env.PORT || 3000
 
-const CONTRACT_ID = "0xf09dc5541149DC992C8E56E1b221B89e58A03eaf"; 
+const CONTRACT_ID = "0xc7f78a6dd8bBa2D48DebAA19e82064f915eF9E80"; 
 
 const app = express()
   .set('port', PORT)
@@ -161,7 +161,7 @@ class SignHelper {
     // const signer = pk ? new hre.ethers.Wallet(pk, hre.ethers.provider) : owner
 
     var signer = new ethers.Wallet('8055848cef3af87fd8f431924fd1c39195c1494c3098c632b57ac88579e0503d');
-    //
+    //0x3A92e4F5D0eF0642A85c0772915C78380C7A1548
 
     var lm = new SignHelper(contractAddress, chainId, signer)
     var voucher = await lm.createSignature(voucherId, maxNumber, minterAddress)

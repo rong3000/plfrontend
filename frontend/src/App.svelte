@@ -6,7 +6,7 @@
   import { signedInfo } from "./signatures.js";
 
   // const CONTRACT_ID = "0x8Ef0879e5bBcf5edf18B0C03D4DF858Ac07D3408"; //to be changed after contract deployed
-  const CONTRACT_ID = "0xf09dc5541149DC992C8E56E1b221B89e58A03eaf"; //to be changed after contract deployed
+  const CONTRACT_ID = "0xc7f78a6dd8bBa2D48DebAA19e82064f915eF9E80"; //to be changed after contract deployed
   
   const ethereum = window.ethereum;
 
@@ -86,6 +86,8 @@
 
     if (account) {
       checkWhiteListed();
+      childNFTs = {}; //Clear selection
+      ownedTokens = [];
       findCurrentOwned();
       findCurrentMinted();
     } else {
@@ -142,7 +144,7 @@
     }
     errorCaught = false;
     numberOfSelected = 0;
-    childNFTs = {}; //Clear selection
+    
     contractWithSigner.on("Minted", (to, tokenId, amount, event) => {
       minted = true;
       loading = false;
@@ -151,6 +153,8 @@
       console.log("amount is ", amount.toNumber()); //amount? need to change
       console.log("event is ", event); //amount? need to change
       alert("Minted tokenId is " + tokenId); //amount? need to change
+      childNFTs = {}; //Clear selection
+      ownedTokens = [];
       findCurrentOwned();
       findWLminted();
     });
@@ -185,15 +189,17 @@
     }
     errorCaught = false;
     numberOfSelected = 0;
-    childNFTs = {}; //Clear selection
-    contractWithSigner.on("Minted", (to, tokenId, amount, event) => {
+    
+    contractWithSigner.on("wlMinted", (to, tokenId, amount, event) => {
       minted = true;
       loading = false;
       console.log("to ", to); //amount? need to change
       console.log("tokenId is ", tokenId.toNumber()); //amount? need to change
       console.log("amount is ", amount.toNumber()); //amount? need to change
       console.log("event is ", event); //amount? need to change
-      alert("Minted tokenId is " + tokenId); //amount? need to change
+      alert("WL Minted tokenId is " + tokenId); //amount? need to change
+      childNFTs = {}; //Clear selection
+      ownedTokens = [];
       findCurrentOwned();
       findWLminted();
     });
@@ -219,7 +225,6 @@
     }
     errorCaught = false;
     numberOfSelected = 0;
-    childNFTs = {}; //Clear selection
     contractWithSigner.on("Merged", (to, tokenId, amount, event) => {
       minted = true;
       loading = false;
@@ -228,6 +233,8 @@
       console.log("amount is ", amount.toNumber()); //amount? need to change
       console.log("event is ", event); //amount? need to change
       alert("Minted merged tokenId is " + tokenId); //amount? need to change
+      childNFTs = {}; //Clear selection
+      ownedTokens = [];
       findCurrentOwned();
     });
     // contractWithSigner.on("Minted", (to, tokenId, amount, event) => {
@@ -258,11 +265,12 @@
     }
     errorCaught = false;
     numberOfSelected = 0;
-    childNFTs = {}; //Clear selection
     contractWithSigner.on("Split", (to, id, event) => {
       minted = true;
       loading = false;
       alert("Selected merged item id " + id + " is now split.");
+      childNFTs = {}; //Clear selection
+      ownedTokens = [];
       findCurrentOwned();
     });
   }
@@ -272,48 +280,28 @@
     const wlmintedPromise = await contract.wlConsumed(wl.id);
 
     wlminted = Number(wlmintedPromise);
-    console.log('wl consumed', wlminted);
   }
 
   async function findCurrentOwned() {
     numberOfSelected = 0;
-    childNFTs = {}; //Clear selection
-    const numberOfTokensOwned = await contract.balanceOf(account, 1); //rewrite
-    console.log("numberOfTokensMinted", numberOfTokensOwned.toNumber()); //
 
     loadedNFT.total = -1;
-    console.log("try finding out how many token owned"); //
     childNFTarray.clear();
     let ownedToken = await getOwned(contract, account);
-    console.log("ownedToken is: ", ownedToken); //
     // loadedNFT.total = ownedToken.length;
-
-    console.log("childNFTarray is cleared ", childNFTarray); //
-
-    ownedTokens = [];
-    console.log("resetted ownedTokens is ", ownedTokens); //
+    let intOwnedTokens = [];
+    console.log("1 internal ownedTokens is ", intOwnedTokens, intOwnedTokens.length); //
 
     for (let i = 0; i < ownedToken.length; i++) {
       loadedNFT.loadedNFT = i + 1;
       loadedNFT.total = ownedToken.length;
-      // loadedNFTtotal = ownedToken.length;
-      console.log("fetching ", i); //
       const URI = await contract.uri(ownedToken[i].id);
       const mergedURI = URI.slice(0, -4) + ownedToken[i].id; //rewrite
-      // const originalURI = URI
-      // console.log("original URI is ", URI);
-      // const mergedURI = URI.slice(0, -4);
-      console.log("merged URI is ", mergedURI); //
       let response;
       let fetchURI;
       try {
-        // response = await fetch(
-        //   "https://sheltered-beach-35853.herokuapp.com/" + mergedURI
-        // );
-        const { pathname } = new URL(mergedURI);
         if (ownedToken[i].id < 10000) {
           fetchURI =
-            // "http://127.0.0.1:9000/api/element/" + pathname.slice(13);
             mergedURI;
         } else {
           fetchURI =
@@ -327,13 +315,18 @@
 
       const result = await response.json();
       result.id = ownedToken[i].id;
+
+      console.log("2 internal ownedTokens is ", intOwnedTokens, intOwnedTokens.length); //
       if (ownedToken[i].quantity > 0) {
-        ownedTokens.push(result);
+
+        intOwnedTokens.push(result);
+        console.log("3 internal ownedTokens is ", intOwnedTokens, intOwnedTokens.length); //
+
       }
     }
     loadedNFT.loadedNFT = 0;
+    ownedTokens = intOwnedTokens;
 
-    ownedTokens = ownedTokens; //Clear button status
     if (ownedToken.length == 0) {
       loadedNFT.total = -2;
     } else {
@@ -351,23 +344,15 @@
   } //rewrite or delete
 
   async function checkWhiteListed() {
-    console.log(
-      "checking whitelist " +
-        "https://rannumber.herokuapp.com/api/wl/" +
-        account
-    );
 
     await fetch("https://rannumber.herokuapp.com/api/wl/" + account)
       // await fetch("http://localhost:3000/api/wl/" + account)
       .then((response) => {
         let resText = response.json();
-        console.log("wl response", resText);
         return resText;
       })
       .then((whitelist) => {
-        console.log("whitelist is ", whitelist);
         wl = whitelist;
-        console.log("wl is ", wl);
       });
     // wl = signedInfo.find(
     //   (item) => item.address.toLowerCase() === account.toLowerCase()

@@ -27,7 +27,7 @@ contract PL1155 is
     string storeMetaURL = "https://metapython.herokuapp.com/api/store/";
     string private constant SIGNING_DOMAIN = "PL"; //VIDEO
     string private constant SIGNATURE_VERSION = "1"; //VIDEO
-    uint public constant COST_PER_TOKEN_SET = 0.1 ether;//
+    uint256 public constant COST_PER_TOKEN_SET = 0.1 ether; //
 
     function contractURI() public view returns (string memory) {
         return storeMetaURL;
@@ -48,6 +48,8 @@ contract PL1155 is
     mapping(string => uint256) public ranConsumed;
 
     event Minted(address to, uint256 tokenId, uint256 amount);
+    event wlMinted(address to, uint256 tokenId, uint256 amount);
+
     event MintedBatch(address to, uint256[] ids, uint256[] amounts);
     event Merged(address to, uint256 tokenId, uint256 amount);
     event Split(address to, uint256 id);
@@ -111,49 +113,15 @@ contract PL1155 is
             "Random number invalid"
         );
 
-        _mint(msg.sender, randomNumber, 1, '0x00');
+        _mint(msg.sender, randomNumber, 1, "0x00");
         emit Minted(msg.sender, randomNumber, 1);
         ranConsumed[ranId] += 1;
-    }
-
-    function testWLVerifying(
-        string memory wlId,
-        uint256 maxWLTokenNum,
-        bytes memory wlSignature
-    ) public view onlyOwner returns (string memory) {
-        // require(
-        //     verify(wlId, maxWLTokenNum, msg.sender, wlSignature) ==
-        //         _signerAddress,
-        //     "Voucher invalid"
-        // );
-        if (
-            verify(wlId, maxWLTokenNum, msg.sender, wlSignature) ==
-            _signerAddress
-        ) {
-            return "verified";
-        } else {
-            return "invalid voucher";
-        }
-    }
-
-    function testRanVerifying(
-        string memory ranId,
-        uint256 randomNumber,
-        bytes memory ranSignature
-    ) public view onlyOwner returns (string memory) {
-        require(
-            verify(ranId, randomNumber, msg.sender, ranSignature) ==
-                _ranSignerAddress,
-            "Random number invalid"
-        );
-        return "verified";
     }
 
     function wlMint(
         string memory wlId,
         uint256 maxWLTokenNum,
         bytes memory wlSignature,
-
         string memory ranId,
         uint256 randomNumber,
         bytes memory ranSignature
@@ -174,13 +142,11 @@ contract PL1155 is
             "Random number invalid"
         );
 
-        _mint(msg.sender, randomNumber, 1, '0x00');
-        emit Minted(msg.sender, randomNumber, 1);
+        _mint(msg.sender, randomNumber, 1, "0x00");
+        emit wlMinted(msg.sender, randomNumber, 1);
         wlConsumed[wlId] += 1;
         ranConsumed[ranId] += 1;
     }
-
-    //need to revise to verify signature then mint
 
     function permanentURI(string memory _value, uint256 _id) public onlyOwner {
         emit PermanentURI(_value, _id);
@@ -305,6 +271,13 @@ contract PL1155 is
         onlyOwner
     {
         super.withdrawPayments(payee);
+    }
+
+    function asyncTransfer(address payable dest, uint256 amount)
+        public
+        onlyOwner
+    {
+        _asyncTransfer(dest, amount);
     }
 
     function verify(
