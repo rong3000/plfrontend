@@ -6,7 +6,7 @@
   import { signedInfo } from "./signatures.js";
 
   // const CONTRACT_ID = "0x8Ef0879e5bBcf5edf18B0C03D4DF858Ac07D3408"; //to be changed after contract deployed
-  const CONTRACT_ID = "0xc7f78a6dd8bBa2D48DebAA19e82064f915eF9E80"; //to be changed after contract deployed
+  const CONTRACT_ID = "0x184556A90d8e1c2F835c894F088efD5164551Df8"; //to be changed after contract deployed
   
   const ethereum = window.ethereum;
 
@@ -22,7 +22,7 @@
   let ownedTokens = [];
   let recentlyMintedTokens = [];
   let openseaContractLink =
-    "https://testnets.opensea.io/assets/0x92AB5aBa441674FD59aeb63Ee3282851567b63a1/"; //to be changed after contract deployed
+    "https://testnets.opensea.io/assets/" + CONTRACT_ID +"\/"; //to be changed after contract deployed
   let tokenSymbol = "PL";
   let childNFTs = {};
   let childNFTarray = new Set();
@@ -296,6 +296,7 @@
       loadedNFT.loadedNFT = i + 1;
       loadedNFT.total = ownedToken.length;
       const URI = await contract.uri(ownedToken[i].id);
+      console.log("URI ", URI);
       const mergedURI = URI.slice(0, -4) + ownedToken[i].id; //rewrite
       let response;
       let fetchURI;
@@ -387,7 +388,7 @@
       let response;
       try {
         response = await fetch(
-          "https://sheltered-beach-35853.herokuapp.com/" + mergedURI
+          mergedURI
         );
         // response = await fetch(URI);
       } catch (error) {
