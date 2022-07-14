@@ -300,13 +300,13 @@
       let response;
       let fetchURI;
       try {
-        if (ownedToken[i].id < 10000) {
+        // if (ownedToken[i].id < 10000) {
           fetchURI =
             mergedURI;
-        } else {
-          fetchURI =
-            "http://metapython.herokuapp.com/api/merged/" + ownedToken[i].id;
-        }
+        // } else {
+        //   fetchURI =
+        //     "http://metapython.herokuapp.com/api/merged/" + ownedToken[i].id;
+        // }
         console.log("fetching ", fetchURI);
         response = await fetch(fetchURI);
       } catch (error) {
