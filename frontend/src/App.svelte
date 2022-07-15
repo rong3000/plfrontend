@@ -38,14 +38,12 @@
 
   function toggle(event) {
     childNFTs[event.currentTarget.id] = !childNFTs[event.currentTarget.id];
-    console.log("childNFTs", childNFTs); //console.log
     if (childNFTs[event.currentTarget.id]) {
       childNFTarray.add(event.currentTarget.id);
     } else if (!childNFTs[event.currentTarget.id]) {
       childNFTarray.delete(event.currentTarget.id);
     }
     numberOfSelected = childNFTarray.size;
-    console.log("childNFTarray", ...childNFTarray); //console.log
     containMerged = false;
     for (let i = 0; i < childNFTarray.size; i++) {
       if (Array.from(childNFTarray)[i] > 10000) {
@@ -103,29 +101,15 @@
     init();
   }
 
-  //   contract.someMethod(1, 2, 3).then((result) => {
-  // }, (error) => {
-  //     console.log(error);
-  //     // error.reason - The Revert reason; this is what you probably care about. :)
-  //     // Additionally:
-  //     // - error.address - the contract address
-  //     // - error.args - [ BigNumber(1), BigNumber(2), BigNumber(3) ] in this case
-  //     // - error.method - "someMethod()" in this case
-  //     // - Signature - "Error(string)" (the EIP 838 sighash; supports future custom errors)
-  //     // - error.errorArgs - The arguments passed into the error (more relevant post EIP 838 custom errors)
-  //     // - error.transaction - The call transaction used
-  // });
-
   async function mint() {
     minted = false;
 
     await fetch("https://rannumber.herokuapp.com/api/ran/" + account)
-      // await fetch("http://localhost:3000/api/ran/" + account)
       .then((response) => {
         return response.json();
       })
       .then((ran) => {
-        console.log("ran is ", ran);
+        // console.log("ran is ", ran);
         
         const options = {value: ethers.utils.parseEther("0.3")}
         contractWithSigner.mint(ran.id, ran.number, ran.signature, options).then(
@@ -148,10 +132,6 @@
     contractWithSigner.on("Minted", (to, tokenId, amount, event) => {
       minted = true;
       loading = false;
-      console.log("to ", to); //amount? need to change
-      console.log("tokenId is ", tokenId.toNumber()); //amount? need to change
-      console.log("amount is ", amount.toNumber()); //amount? need to change
-      console.log("event is ", event); //amount? need to change
       alert("Minted tokenId is " + tokenId); //amount? need to change
       childNFTs = {}; //Clear selection
       ownedTokens = [];
@@ -165,12 +145,11 @@
     minted = false;
 
     await fetch("https://rannumber.herokuapp.com/api/ran/" + account)
-      // await fetch("http://localhost:3000/api/ran/" + account)
       .then((response) => {
         return response.json();
       })
       .then((ran) => {
-        console.log("ran is ", ran);
+        // console.log("ran is ", ran);
         const options = {value: ethers.utils.parseEther("0.1")}
 
         contractWithSigner.wlMint(wl.id, wl.number, wl.signature, ran.id, ran.number, ran.signature, options).then(
@@ -193,10 +172,6 @@
     contractWithSigner.on("wlMinted", (to, tokenId, amount, event) => {
       minted = true;
       loading = false;
-      console.log("to ", to); //amount? need to change
-      console.log("tokenId is ", tokenId.toNumber()); //amount? need to change
-      console.log("amount is ", amount.toNumber()); //amount? need to change
-      console.log("event is ", event); //amount? need to change
       alert("WL Minted tokenId is " + tokenId); //amount? need to change
       childNFTs = {}; //Clear selection
       ownedTokens = [];
@@ -228,21 +203,11 @@
     contractWithSigner.on("Merged", (to, tokenId, amount, event) => {
       minted = true;
       loading = false;
-      console.log("to ", to); //amount? need to change
-      console.log("tokenId is ", tokenId.toNumber()); //amount? need to change
-      console.log("amount is ", amount.toNumber()); //amount? need to change
-      console.log("event is ", event); //amount? need to change
-      alert("Minted merged tokenId is " + tokenId); //amount? need to change
+      alert("Merged tokenId is " + tokenId); //amount? need to change
       childNFTs = {}; //Clear selection
       ownedTokens = [];
       findCurrentOwned();
     });
-    // contractWithSigner.on("Minted", (to, tokenId, amount, event) => {
-    //   minted = true;
-    //   loading = false;
-    //   alert("Minted id for merged item is ", tokenId);
-    //   findCurrentOwned();
-    // });
   }
 
   async function split() {
@@ -290,13 +255,12 @@
     let ownedToken = await getOwned(contract, account);
     // loadedNFT.total = ownedToken.length;
     let intOwnedTokens = [];
-    console.log("1 internal ownedTokens is ", intOwnedTokens, intOwnedTokens.length); //
 
     for (let i = 0; i < ownedToken.length; i++) {
       loadedNFT.loadedNFT = i + 1;
       loadedNFT.total = ownedToken.length;
       const URI = await contract.uri(ownedToken[i].id);
-      console.log("URI ", URI);
+      // console.log("URI ", URI);
       const mergedURI = URI.slice(0, -4) + ownedToken[i].id; //rewrite
       let response;
       let fetchURI;
@@ -308,7 +272,6 @@
         //   fetchURI =
         //     "http://metapython.herokuapp.com/api/merged/" + ownedToken[i].id;
         // }
-        console.log("fetching ", fetchURI);
         response = await fetch(fetchURI);
       } catch (error) {
         console.log(error); //alert or console
@@ -317,12 +280,8 @@
       const result = await response.json();
       result.id = ownedToken[i].id;
 
-      console.log("2 internal ownedTokens is ", intOwnedTokens, intOwnedTokens.length); //
       if (ownedToken[i].quantity > 0) {
-
         intOwnedTokens.push(result);
-        console.log("3 internal ownedTokens is ", intOwnedTokens, intOwnedTokens.length); //
-
       }
     }
     loadedNFT.loadedNFT = 0;
@@ -369,7 +328,7 @@
       ],
     });
 
-    console.log("looking for selectedAddress 1 ", ethereum.selectedAddress); //
+    // console.log("looking for selectedAddress 1 ", ethereum.selectedAddress); //
     if (ethereum.selectedAddress) {
       window.location.reload();
     } //if
@@ -378,12 +337,12 @@
 
     await recentMintEvents.map(async (MintEvent) => {
       const token = MintEvent.args.id;
-      console.log("token id is ", token); //
+      // console.log("token id is ", token); //
 
       const URI = await contract.uri(token);
 
       const mergedURI = URI.slice(0, -4) + token.toNumber();
-      console.log("URI is ", mergedURI); //
+      // console.log("URI is ", mergedURI); //
 
       let response;
       try {
@@ -492,9 +451,9 @@
       </form>
       <!-- need redo for new contract. Need to limit max per id, not limiting total -->
 
-      <section>
+      <!-- <section>
         <span>{currentMinted} / {maxMints} minted</span>
-      </section>
+      </section> -->
 
       <h2>Your Tokens:</h2>
       {#if loadedNFT.total > 0}
