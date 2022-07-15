@@ -48,7 +48,6 @@ contract PL1155 is
     string private constant SIGNING_DOMAIN = "PL"; //VIDEO
     string private constant SIGNATURE_VERSION = "1"; //VIDEO
     uint256 cost_per_token_set = 0.05 ether; //
-    string baseURI = "https://metapython.herokuapp.com/api/element/{id}";
 
     function getContractURI() public view returns (string memory) {
         return storeMetaURL;
@@ -89,7 +88,7 @@ contract PL1155 is
     address private _ranSignerAddress;
 
     constructor(address signerAddress_, address ranSignerAddress_)
-        ERC1155(baseURI)
+        ERC1155("https://metapython.herokuapp.com/api/element/{id}")
         EIP712(SIGNING_DOMAIN, SIGNATURE_VERSION)
     {
         _signerAddress = signerAddress_;
@@ -307,6 +306,10 @@ contract PL1155 is
         // otherwise, use the default ERC721.isApprovedForAll()
         return ERC1155.isApprovedForAll(_owner, _operator);
     }
+    
+    function setURI(string memory newuri) public onlyOwner {
+        _setURI(newuri);
+    }
 
     function uri(uint256 tokenId)
         public
@@ -316,18 +319,7 @@ contract PL1155 is
     {
         return super.uri(tokenId);
     }
-
-    function setURI(string memory newuri) public onlyOwner {
-        _setURI(newuri);
-    }
-
-    function getURI() public view returns (string memory)  {
-        return baseURI;
-    }
-
-    function setBaseURI(string memory baseURI) public onlyOwner {
-        _setBaseURI(baseURI);
-    }
+    
     function setTokenURI(uint256 tokenId, string memory tokenURI)
         public
         onlyOwner
@@ -362,7 +354,7 @@ contract PL1155 is
         uint256 number,
         address minterAddress,
         bytes memory signature
-    ) public onlyOwner view returns (address) {
+    ) internal view returns (address) {
         bytes32 digest = _hashTypedDataV4(
             keccak256(
                 abi.encode(

@@ -1,4 +1,5 @@
 
+if mainnet need to change proxy
 wl 0x3A92e4F5D0eF0642A85c0772915C78380C7A1548
 ran 0x7138baD93bCF83AF06E152FBDbdF52F327808206
 
@@ -6,19 +7,23 @@ get contract address from remix
 0x184556A90d8e1c2F835c894F088efD5164551Df8
 
 copy across pl1155.json into frontend folder
+copy across pl1155.json into rannumber folder
 
 copy contract address into
-1. local_sign_only.js 
-2. randomnumber/index.js
-3. App.svelte
+1. local_sign_only.js ; if mainnet need to change network id
+2. randomnumber/index.js; if mainnet need to change network id
+3. App.svelte; mainnet dealing
 
 git push randomnumber
 
 //start running
 into frontend and npm run dev
+localhost:5000
+
 copy plfrontend local_sign_only.js into randomnumber and run node local_sign_only.js
+localhost:3000
 [optional] 
-psql
+terminal psql
 
 DELETE FROM signednumber3;
 DELETE FROM wl;

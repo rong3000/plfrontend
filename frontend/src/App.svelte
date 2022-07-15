@@ -6,7 +6,7 @@
   import { signedInfo } from "./signatures.js";
 
   // const CONTRACT_ID = "0x8Ef0879e5bBcf5edf18B0C03D4DF858Ac07D3408"; //to be changed after contract deployed
-  const CONTRACT_ID = "0x184556A90d8e1c2F835c894F088efD5164551Df8"; //to be changed after contract deployed
+  const CONTRACT_ID = "0x3506BA155414aC1404369d4357bf32A74C74cdC4"; //to be changed after contract deployed
   
   const ethereum = window.ethereum;
 
@@ -111,7 +111,7 @@
       .then((ran) => {
         // console.log("ran is ", ran);
         
-        const options = {value: ethers.utils.parseEther("0.3")}
+        const options = {value: ethers.utils.parseEther("0.15")}
         contractWithSigner.mint(ran.id, ran.number, ran.signature, options).then(
           (result) => {},
           (error) => {
@@ -137,6 +137,7 @@
       ownedTokens = [];
       findCurrentOwned();
       findWLminted();
+      findCurrentMinted();
     });
   }
 
@@ -150,7 +151,7 @@
       })
       .then((ran) => {
         // console.log("ran is ", ran);
-        const options = {value: ethers.utils.parseEther("0.1")}
+        const options = {value: ethers.utils.parseEther("0.05")}
 
         contractWithSigner.wlMint(wl.id, wl.number, wl.signature, ran.id, ran.number, ran.signature, options).then(
           (result) => {},
@@ -177,6 +178,7 @@
       ownedTokens = [];
       findCurrentOwned();
       findWLminted();
+      findCurrentMinted();
     });
   }
 
@@ -184,7 +186,7 @@
     minted = false;
 
     await contractWithSigner
-      .merge(account, Array.from(childNFTarray), "0x00")
+      .merge(Array.from(childNFTarray), "0x00")
       .then(
         (result) => {},
         (error) => {
@@ -207,6 +209,7 @@
       childNFTs = {}; //Clear selection
       ownedTokens = [];
       findCurrentOwned();
+      findCurrentMinted();
     });
   }
 
@@ -214,7 +217,7 @@
     minted = false;
 
     await contractWithSigner
-      .split(account, Array.from(childNFTarray)[0], "0x00")
+      .split(Array.from(childNFTarray)[0], "0x00")
       .then(
         (result) => {},
         (error) => {
@@ -237,6 +240,7 @@
       childNFTs = {}; //Clear selection
       ownedTokens = [];
       findCurrentOwned();
+      findCurrentMinted();
     });
   }
 
@@ -296,11 +300,13 @@
   }
 
   async function findCurrentMinted() {
-    const total = await contract.MAX_MINTS();
-    const supply = await contract.totalSupply(1);
+    const total = await contract.getMaxMints();
+    const supply = await contract.getTokensetMinted();
 
     maxMints = Number(total);
+    console.log('maxmints is ', maxMints);
     currentMinted = Number(supply);
+    console.log('currentMinted is ', currentMinted);
   } //rewrite or delete
 
   async function checkWhiteListed() {
@@ -451,14 +457,14 @@
       </form>
       <!-- need redo for new contract. Need to limit max per id, not limiting total -->
 
-      <!-- <section>
+      <section>
         <span>{currentMinted} / {maxMints} minted</span>
-      </section> -->
+      </section>
 
       <h2>Your Tokens:</h2>
       {#if loadedNFT.total > 0}
         <!-- {#if loadedNFTtotal > 0} -->
-        You own {loadedNFT.total} tokens, loading {loadedNFT.loadedNFT}...
+        You own {loadedNFT.total} different token ids, loading {loadedNFT.loadedNFT}...
       {/if}
       {#if ownedTokens.length > 0}
         <section>
