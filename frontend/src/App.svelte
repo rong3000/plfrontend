@@ -3,7 +3,6 @@
   import { onMount } from "svelte";
   import Contract from "./PL1155.json";
   import { getOwned } from "./getOwned";
-  import { signedInfo } from "./signatures.js";
 
   // const CONTRACT_ID = "0x8Ef0879e5bBcf5edf18B0C03D4DF858Ac07D3408"; //to be changed after contract deployed
   const CONTRACT_ID = "0x3506BA155414aC1404369d4357bf32A74C74cdC4"; //to be changed after contract deployed

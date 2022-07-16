@@ -58,7 +58,6 @@ export default {
 			dedupe: ['svelte']
 		}),
 		commonjs(),
-
 		json(),
 
 		// In dev mode, call `npm run start` once

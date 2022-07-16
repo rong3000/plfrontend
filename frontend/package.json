@@ -1,7 +1,6 @@
 {
   "name": "svelte-app",
   "version": "1.0.0",
-  "type": "module",
   "private": true,
   "scripts": {
     "build": "rollup -c",
@@ -20,7 +19,7 @@
     "svelte": "^3.0.0"
   },
   "dependencies": {
-    "ethers": "^5.4.6",
-    "sirv-cli": "^1.0.0"
+    "ethers": "^5.6.9",
+    "sirv-cli": "^2.0.0"
   }
 }
