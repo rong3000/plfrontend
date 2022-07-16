@@ -267,14 +267,14 @@
       const mergedURI = URI.slice(0, -4) + ownedToken[i].id; //rewrite
       let response;
       let fetchURI;
+      
       try {
-        // if (ownedToken[i].id < 10000) {
-          fetchURI =
-            mergedURI;
-        // } else {
-        //   fetchURI =
-        //     "http://metapython.herokuapp.com/api/merged/" + ownedToken[i].id;
-        // }
+          // let a = new URL(mergedURI);
+          // fetchURI =
+          // "http://localhost:9000" + a.pathname;
+          fetchURI = mergedURI;
+
+        console.log(fetchURI);
         response = await fetch(fetchURI);
       } catch (error) {
         console.log(error); //alert or console
