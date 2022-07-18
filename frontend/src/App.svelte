@@ -3,7 +3,6 @@
   import { onMount } from "svelte";
   import Contract from "./PL1155.json";
   import { getOwned } from "./getOwned";
-  import { signedInfo } from "./signatures.js";
 
   // const CONTRACT_ID = "0x8Ef0879e5bBcf5edf18B0C03D4DF858Ac07D3408"; //to be changed after contract deployed
   const CONTRACT_ID = "0x3506BA155414aC1404369d4357bf32A74C74cdC4"; //to be changed after contract deployed
@@ -264,18 +263,17 @@
       loadedNFT.loadedNFT = i + 1;
       loadedNFT.total = ownedToken.length;
       const URI = await contract.uri(ownedToken[i].id);
-      // console.log("URI ", URI);
-      const mergedURI = URI.slice(0, -4) + ownedToken[i].id; //rewrite
+      // console.log("ownedToken[i].id ", ownedToken[i].id);
+      // console.log("ownedToken[i].id Number", Number(ownedToken[i].id));
+      // console.log("ownedToken[i].id Number 16", Number(ownedToken[i].id).toString(16));
+      // console.log("ownedToken[i].id parseInt", parseInt(ownedToken[i].id));
+      // console.log("ownedToken[i].id.toString(16) ", parseInt(ownedToken[i].id).toString(16));
+      const mergedURI = URI.slice(0, -4) + parseInt(ownedToken[i].id).toString(16); //rewrite
       let response;
       let fetchURI;
       try {
-        // if (ownedToken[i].id < 10000) {
           fetchURI =
             mergedURI;
-        // } else {
-        //   fetchURI =
-        //     "http://metapython.herokuapp.com/api/merged/" + ownedToken[i].id;
-        // }
         response = await fetch(fetchURI);
       } catch (error) {
         console.log(error); //alert or console
@@ -304,9 +302,9 @@
     const supply = await contract.getTokensetMinted();
 
     maxMints = Number(total);
-    console.log('maxmints is ', maxMints);
+    // console.log('maxmints is ', maxMints);
     currentMinted = Number(supply);
-    console.log('currentMinted is ', currentMinted);
+    // console.log('currentMinted is ', currentMinted);
   } //rewrite or delete
 
   async function checkWhiteListed() {
@@ -347,7 +345,7 @@
 
       const URI = await contract.uri(token);
 
-      const mergedURI = URI.slice(0, -4) + token.toNumber();
+      const mergedURI = URI.slice(0, -4) + parseInt(token).toString(16);
       // console.log("URI is ", mergedURI); //
 
       let response;
@@ -397,7 +395,7 @@
 <main>
   {#if ethereum}
     {#if account}
-      <h1>Welcome to the Poo app 3360fb0</h1>
+      <h1>Welcome to the Poo app</h1>
       <h2>
         You have logged in as {account.slice(0, 4) +
           ".." +
