@@ -11,29 +11,27 @@
 
   let chain, provider, signer, contract, contractWithSigner;
 
-  let maxMints = -1;
+  let maxMints = -1;//
   let currentMinted = -1;
   let account = null;
   let minted = false;
   let loading = false;
-  let errorCaught = false;
-  let bElementId = 1;
+  let errorCaught = false;//
   let ownedTokens = [];
   let recentlyMintedTokens = [];
   let openseaContractLink =
     "https://testnets.opensea.io/assets/" + CONTRACT_ID +"\/"; //to be changed after contract deployed
-  let tokenSymbol = "PL";
-  let childNFTs = {};
-  let childNFTarray = new Set();
-  let numberOfSelected;
-  let containMerged = false;
+  let tokenSymbol = "PL";//
+  let childNFTs = {};//
+  let childNFTarray = new Set();//
+  let numberOfSelected;//
+  let containMerged = false;//
   let loadedNFT = {
     loadedNFT: 0,
     total: -1,
-  };
-  let wl = false;
-  let wlminted = -1;
-  // let loadedNFTtotal = -1;
+  };//
+  let wl = false;//
+  let wlminted = -1;//
 
   function toggle(event) {
     childNFTs[event.currentTarget.id] = !childNFTs[event.currentTarget.id];
@@ -84,7 +82,7 @@
     if (account) {
       checkWhiteListed();
       childNFTs = {}; //Clear selection
-      ownedTokens = [];
+      ownedTokens = []; //clear ownedtokens
       findCurrentOwned();
       findCurrentMinted();
     } else {
@@ -334,9 +332,9 @@
     });
 
     // console.log("looking for selectedAddress 1 ", ethereum.selectedAddress); //
-    if (ethereum.selectedAddress) {
-      window.location.reload();
-    } //if
+    // if (ethereum.selectedAddress) {
+    //   window.location.reload();
+    // } //if
 
     recentMintEvents = recentMintEvents.slice(-3);
 
