@@ -3,6 +3,7 @@
   import { onMount } from "svelte";
   import Contract from "./PL1155.json";
   import { getOwned } from "./getOwned";
+  import { signedInfo } from "./signatures.js";
 
   // const CONTRACT_ID = "0x8Ef0879e5bBcf5edf18B0C03D4DF858Ac07D3408"; //to be changed after contract deployed
   const CONTRACT_ID = "0x3506BA155414aC1404369d4357bf32A74C74cdC4"; //to be changed after contract deployed
@@ -11,27 +12,29 @@
 
   let chain, provider, signer, contract, contractWithSigner;
 
-  let maxMints = -1;//
+  let maxMints = -1;
   let currentMinted = -1;
   let account = null;
   let minted = false;
   let loading = false;
-  let errorCaught = false;//
+  let errorCaught = false;
+  let bElementId = 1;
   let ownedTokens = [];
   let recentlyMintedTokens = [];
   let openseaContractLink =
     "https://testnets.opensea.io/assets/" + CONTRACT_ID +"\/"; //to be changed after contract deployed
-  let tokenSymbol = "PL";//
-  let childNFTs = {};//
-  let childNFTarray = new Set();//
-  let numberOfSelected;//
-  let containMerged = false;//
+  let tokenSymbol = "PL";
+  let childNFTs = {};
+  let childNFTarray = new Set();
+  let numberOfSelected;
+  let containMerged = false;
   let loadedNFT = {
     loadedNFT: 0,
     total: -1,
-  };//
-  let wl = false;//
-  let wlminted = -1;//
+  };
+  let wl = false;
+  let wlminted = -1;
+  // let loadedNFTtotal = -1;
 
   function toggle(event) {
     childNFTs[event.currentTarget.id] = !childNFTs[event.currentTarget.id];
@@ -82,7 +85,7 @@
     if (account) {
       checkWhiteListed();
       childNFTs = {}; //Clear selection
-      ownedTokens = []; //clear ownedtokens
+      ownedTokens = [];
       findCurrentOwned();
       findCurrentMinted();
     } else {
@@ -265,14 +268,14 @@
       const mergedURI = URI.slice(0, -4) + ownedToken[i].id; //rewrite
       let response;
       let fetchURI;
-      
       try {
-          // let a = new URL(mergedURI);
-          // fetchURI =
-          // "http://localhost:9000" + a.pathname;
-          fetchURI = mergedURI;
-
-        console.log(fetchURI);
+        // if (ownedToken[i].id < 10000) {
+          fetchURI =
+            mergedURI;
+        // } else {
+        //   fetchURI =
+        //     "http://metapython.herokuapp.com/api/merged/" + ownedToken[i].id;
+        // }
         response = await fetch(fetchURI);
       } catch (error) {
         console.log(error); //alert or console
@@ -394,7 +397,7 @@
 <main>
   {#if ethereum}
     {#if account}
-      <h1>Welcome to the Poo app</h1>
+      <h1>Welcome to the Poo app 3360fb0</h1>
       <h2>
         You have logged in as {account.slice(0, 4) +
           ".." +
