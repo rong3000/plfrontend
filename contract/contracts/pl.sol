@@ -48,6 +48,7 @@ contract PL1155 is
     string private constant SIGNING_DOMAIN = "PL"; //VIDEO
     string private constant SIGNATURE_VERSION = "1"; //VIDEO
     uint256 cost_per_token_set = 0.05 ether; //
+    uint256 costFactor = 3;
 
     function getContractURI() public view returns (string memory) {
         return storeMetaURL;
@@ -59,10 +60,18 @@ contract PL1155 is
 
     function setCost(uint256 _cost_per_token_set) public onlyOwner {
         cost_per_token_set = _cost_per_token_set;
-    }
+    } 
 
     function getCost() public view returns (uint256){
         return cost_per_token_set;
+    }
+
+    function setCostFactor(uint256 _costFactor) public onlyOwner {
+        costFactor = _costFactor;
+    }
+
+    function getCostFactor() public view returns (uint256){
+        return costFactor;
     }
 
     using SafeMath for uint256;
@@ -157,10 +166,9 @@ contract PL1155 is
         bytes memory ranSignature
     ) public payable {
         require(hasSaleStarted || msg.sender == owner(), "sale hasn't started");
-        require(msg.value == cost_per_token_set * 3, "Incorrect Ether amount.");
+        require(msg.value == cost_per_token_set * costFactor, "Incorrect Ether amount.");
         require(ranConsumed[ranId] + 1 <= 1, "Random number already used.");
         require(randomNumber > 0, "Id cannot be 0");
-        require(randomNumber < 10000, "Id must be smaller than 10000");
         require(
             verify(ranId, randomNumber, msg.sender, ranSignature) ==
                 _ranSignerAddress,
@@ -190,7 +198,6 @@ contract PL1155 is
         require(maxWLTokenNum >= wlConsumed[wlId] + 1, "WL limit exceeded.");
         require(ranConsumed[ranId] + 1 <= 1, "Random number already used.");
         require(randomNumber > 0, "Id cannot be 0");
-        require(randomNumber < 10000, "Id must be smaller than 10000");
         require(
             verify(wlId, maxWLTokenNum, msg.sender, wlSignature) ==
                 _signerAddress,
