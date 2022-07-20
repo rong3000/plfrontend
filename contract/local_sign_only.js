@@ -8,7 +8,7 @@ const db = require('./src/database')
 
 const PORT = process.env.PORT || 3000
 
-const CONTRACT_ID = "0x3506BA155414aC1404369d4357bf32A74C74cdC4"; 
+const CONTRACT_ID = "0x884b778A1c48ab6EbBb51b383bCcAE1ae1A5E067"; 
 
 const app = express()
   .set('port', PORT)

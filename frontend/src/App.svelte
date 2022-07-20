@@ -5,7 +5,7 @@
   import { getOwned } from "./getOwned";
 
   // const CONTRACT_ID = "0x8Ef0879e5bBcf5edf18B0C03D4DF858Ac07D3408"; //to be changed after contract deployed
-  const CONTRACT_ID = "0x3506BA155414aC1404369d4357bf32A74C74cdC4"; //to be changed after contract deployed
+  const CONTRACT_ID = "0x884b778A1c48ab6EbBb51b383bCcAE1ae1A5E067"; //to be changed after contract deployed
   
   const ethereum = window.ethereum;
 
