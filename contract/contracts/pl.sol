@@ -11,6 +11,7 @@ import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155URIStorage.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
 import "@openzeppelin/contracts/security/PullPayment.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 abstract contract ContextMixin {
     function msgSender() internal view returns (address payable sender) {
@@ -40,7 +41,8 @@ contract PL1155 is
     ERC1155URIStorage,
     EIP712,
     PullPayment,
-    ContextMixin
+    ContextMixin,
+    ReentrancyGuard
 {
     using ECDSA for bytes32;
 
@@ -164,8 +166,9 @@ contract PL1155 is
         string memory ranId,
         uint256 randomNumber,
         bytes memory ranSignature
-    ) public payable {
-        require(hasSaleStarted || msg.sender == owner(), "sale hasn't started");
+    ) public payable nonReentrant {
+        require(hasSaleStarted || msg.sender == owner(), "Public sale hasn't started");
+        require(msg.sender == tx.origin, "Minting from smart contracts is not allowed");
         require(msg.value == cost_per_token_set * costFactor, "Incorrect Ether amount.");
         require(ranConsumed[ranId] + 1 <= 1, "Random number already used.");
         require(randomNumber > 0, "Id cannot be 0");
@@ -192,8 +195,8 @@ contract PL1155 is
         string memory ranId,
         uint256 randomNumber,
         bytes memory ranSignature
-    ) public payable {
-        require(hasSaleStarted || msg.sender == owner(), "sale hasn't started");
+    ) public payable nonReentrant {
+        require(msg.sender == tx.origin, "Minting from smart contracts is not allowed");
         require(msg.value == cost_per_token_set, "Incorrect Ether amount.");
         require(maxWLTokenNum >= wlConsumed[wlId] + 1, "WL limit exceeded.");
         require(ranConsumed[ranId] + 1 <= 1, "Random number already used.");
@@ -227,9 +230,10 @@ contract PL1155 is
     function merge(
         uint256[] memory ids,
         bytes memory data
-    ) public {
+    ) public nonReentrant {
         require(ids.length > 1, "Cannot merge single element");
         require(ids.length < 11, "Cannot merge more than 10 elements");
+        require(msg.sender == tx.origin, "Merging from smart contracts is not allowed");
         uint256 id = 0;
         uint256[] memory amounts = new uint256[](ids.length);
         for (uint256 i = 0; i < ids.length; i++) {
@@ -251,8 +255,9 @@ contract PL1155 is
     function split(
         uint256 id,
         bytes memory data
-    ) public {
+    ) public nonReentrant {
         require(id > 10000, "Cannot split basic element");
+        require(msg.sender == tx.origin, "Spliting from smart contracts is not allowed");
         uint256 originalId = id;
         uint256 digits = 0;
         uint256 idCalLength = id;
@@ -282,7 +287,7 @@ contract PL1155 is
         uint256[] memory ids,
         uint256[] memory amounts,
         bytes memory data
-    ) public onlyOwner {
+    ) public onlyOwner nonReentrant {
         require(hasSaleStarted || msg.sender == owner(), "sale hasn't started");
         _mintBatch(to, ids, amounts, data);
         emit MintedBatch(to, ids, amounts);
@@ -340,6 +345,7 @@ contract PL1155 is
         virtual
         override
         onlyOwner
+        nonReentrant
     {
         super.withdrawPayments(payee);
     }
