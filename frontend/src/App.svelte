@@ -258,17 +258,23 @@
     let ownedToken = await getOwned(contract, account);
     // loadedNFT.total = ownedToken.length;
     let intOwnedTokens = [];
+    // console.log("from getOwned is ", ownedToken);
 
     for (let i = 0; i < ownedToken.length; i++) {
       loadedNFT.loadedNFT = i + 1;
       loadedNFT.total = ownedToken.length;
+      // console.log('ownedToken ids are ', ownedToken[i].id);
+
       const URI = await contract.uri(ownedToken[i].id);
+      // console.log('uri is ', URI);
       // console.log("ownedToken[i].id ", ownedToken[i].id);
       // console.log("ownedToken[i].id Number", Number(ownedToken[i].id));
       // console.log("ownedToken[i].id Number 16", Number(ownedToken[i].id).toString(16));
       // console.log("ownedToken[i].id parseInt", parseInt(ownedToken[i].id));
       // console.log("ownedToken[i].id.toString(16) ", parseInt(ownedToken[i].id).toString(16));
-      const mergedURI = URI.slice(0, -4) + parseInt(ownedToken[i].id).toString(16); //rewrite
+      const mergedURI = URI.slice(0, -4) + ownedToken[i].id.toHexString(); //rewrite
+      
+      // console.log('mergeduri is ', mergedURI);
       let response;
       let fetchURI;
       try {
