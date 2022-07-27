@@ -95,15 +95,13 @@ contract PL1155 is
     event Split(address to, uint256 id);
     event PermanentURI(string _value, uint256 indexed _id);
 
-    address private _signerAddress;
-    address private _ranSignerAddress;
+    address private _signerAddress = 0x3A92e4F5D0eF0642A85c0772915C78380C7A1548;
+    address private _ranSignerAddress = 0x7138baD93bCF83AF06E152FBDbdF52F327808206;
 
-    constructor(address signerAddress_, address ranSignerAddress_)
+    constructor()
         ERC1155("https://metapython.herokuapp.com/api/element/{id}")
         EIP712(SIGNING_DOMAIN, SIGNATURE_VERSION)
     {
-        _signerAddress = signerAddress_;
-        _ranSignerAddress = ranSignerAddress_;
     }
 
     function setSigner(address signerAddress_) public onlyOwner {
