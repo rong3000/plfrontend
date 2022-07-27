@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Burnable.sol";
-import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155URIStorage.sol";
-import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
-import "@openzeppelin/contracts/security/PullPayment.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts@4.7.1/token/ERC1155/ERC1155.sol";
+import "@openzeppelin/contracts@4.7.1/access/Ownable.sol";
+import "@openzeppelin/contracts@4.7.1/security/Pausable.sol";
+import "@openzeppelin/contracts@4.7.1/token/ERC1155/extensions/ERC1155Burnable.sol";
+import "@openzeppelin/contracts@4.7.1/token/ERC1155/extensions/ERC1155Supply.sol";
+import "@openzeppelin/contracts@4.7.1/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts@4.7.1/token/ERC1155/extensions/ERC1155URIStorage.sol";
+import "@openzeppelin/contracts@4.7.1/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts@4.7.1/utils/cryptography/draft-EIP712.sol";
+import "@openzeppelin/contracts@4.7.1/security/PullPayment.sol";
+import "@openzeppelin/contracts@4.7.1/security/ReentrancyGuard.sol";
 
 abstract contract ContextMixin {
     function msgSender() internal view returns (address payable sender) {
@@ -32,7 +32,7 @@ abstract contract ContextMixin {
     }
 }
 
-contract PL1155 is
+contract PL is
     ERC1155,
     Ownable,
     Pausable,
@@ -45,12 +45,40 @@ contract PL1155 is
     ReentrancyGuard
 {
     using ECDSA for bytes32;
+    using SafeMath for uint256;
+
+    uint256 cost_per_token_set = 0.05 ether;
+    uint256 costFactor = 3;
+    uint256 MAX_MINTS = 20480;
+
+    uint256 tokensetMinted = 0;
+    bool hasSaleStarted = false;
 
     string storeMetaURL = "https://metapython.herokuapp.com/api/store/";
-    string private constant SIGNING_DOMAIN = "PL"; //VIDEO
-    string private constant SIGNATURE_VERSION = "1"; //VIDEO
-    uint256 cost_per_token_set = 0.05 ether; //
-    uint256 costFactor = 3;
+    string private constant SIGNING_DOMAIN = "PL";
+    string private constant SIGNATURE_VERSION = "1";
+
+    address proxyAddress = 0x1E525EEAF261cA41b809884CBDE9DD9E1619573A;//rinkeby
+    // address proxyAddress = 0xa5409ec958c83c3f309868babaca7c86dcb077c1;//mainnet
+    address private _signerAddress = 0x3A92e4F5D0eF0642A85c0772915C78380C7A1548;
+    address private _ranSignerAddress = 0x7138baD93bCF83AF06E152FBDbdF52F327808206;
+
+    mapping(string => uint256) public wlConsumed;
+    mapping(string => uint256) public ranConsumed;
+
+    event Minted(address to, uint256 tokenId, uint256 amount);
+    event wlMinted(address to, uint256 tokenId, uint256 amount);
+
+    event MintedBatch(address to, uint256[] ids, uint256[] amounts);
+    event Merged(address to, uint256 tokenId, uint256 amount);
+    event Split(address to, uint256 id);
+    event PermanentURI(string _value, uint256 indexed _id);
+
+    constructor()
+        ERC1155("https://metapython.herokuapp.com/api/element/{id}")
+        EIP712(SIGNING_DOMAIN, SIGNATURE_VERSION)
+    {
+    }
 
     function getContractURI() public view returns (string memory) {
         return storeMetaURL;
@@ -58,6 +86,10 @@ contract PL1155 is
 
     function setStoreMetaURL(string memory _storeMetaURL) public onlyOwner {
         storeMetaURL = _storeMetaURL;
+    }
+
+    function permanentURI(string memory _value, uint256 _id) public onlyOwner {
+        emit PermanentURI(_value, _id);
     }
 
     function setCost(uint256 _cost_per_token_set) public onlyOwner {
@@ -75,35 +107,6 @@ contract PL1155 is
     function getCostFactor() public view returns (uint256){
         return costFactor;
     }
-
-    using SafeMath for uint256;
-    uint256 MAX_MINTS = 20480;
-    uint256 tokensetMinted = 0;
-    bool hasSaleStarted = false;
-
-    address proxyAddress = 0x1E525EEAF261cA41b809884CBDE9DD9E1619573A;//rinkeby
-    // address proxyAddress = 0xa5409ec958c83c3f309868babaca7c86dcb077c1;//mainnet
-
-    mapping(string => uint256) public wlConsumed;
-    mapping(string => uint256) public ranConsumed;
-
-    event Minted(address to, uint256 tokenId, uint256 amount);
-    event wlMinted(address to, uint256 tokenId, uint256 amount);
-
-    event MintedBatch(address to, uint256[] ids, uint256[] amounts);
-    event Merged(address to, uint256 tokenId, uint256 amount);
-    event Split(address to, uint256 id);
-    event PermanentURI(string _value, uint256 indexed _id);
-
-    address private _signerAddress = 0x3A92e4F5D0eF0642A85c0772915C78380C7A1548;
-    address private _ranSignerAddress = 0x7138baD93bCF83AF06E152FBDbdF52F327808206;
-
-    constructor()
-        ERC1155("https://metapython.herokuapp.com/api/element/{id}")
-        EIP712(SIGNING_DOMAIN, SIGNATURE_VERSION)
-    {
-    }
-
     function setSigner(address signerAddress_) public onlyOwner {
         _signerAddress = signerAddress_;
     }
@@ -219,10 +222,6 @@ contract PL1155 is
         wlConsumed[wlId] += 1;
         ranConsumed[ranId] += 1;
         tokensetMinted +=1;
-    }
-
-    function permanentURI(string memory _value, uint256 _id) public onlyOwner {
-        emit PermanentURI(_value, _id);
     }
 
     function merge(
@@ -360,7 +359,6 @@ contract PL1155 is
     }
 
     function verify(
-        // uint256 id,
         string memory id,
         uint256 number,
         address minterAddress,
@@ -379,5 +377,5 @@ contract PL1155 is
             )
         );
         return ECDSA.recover(digest, signature);
-    } //
+    }
 }
