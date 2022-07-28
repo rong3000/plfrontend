@@ -352,7 +352,7 @@
   <a href="/">Poos</a>
   <ul>
     <li>
-      <a href="https://opensea.io/collection/poos-io">View on OpenSea</a>
+      <a href="https://opensea.io/collection/poos-io" target="_blank">View on OpenSea</a>
       <!-- to be updated after deployed -->
     </li>
   </ul>
@@ -490,6 +490,7 @@
                 <div class="grid-image">
                   <a
                     href={`https://opensea.io/assets/ethereum/${CONTRACT_ID}/${token.id}`}
+                    target="_blank"
                   >
                     <!-- to be updated after deployed -->
                     <img src={token.image} alt={token.description} />
@@ -515,6 +516,6 @@
 </main>
 
 <footer>
-  <a href="https://opensea.io/collection/poos-io">View on OpenSea</a>
+  <a href="https://opensea.io/collection/poos-io" target="_blank">View on OpenSea</a>
   <!-- to be updated after deployement -->
 </footer>

@@ -36,3 +36,6 @@ DELETE FROM signednumber3;
 DELETE FROM wl;
 [important]
 change both backends' cors to poos.io
+
+[less important]
+update fetchRecentlyMinted's topic
