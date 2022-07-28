@@ -60,8 +60,8 @@ contract PL is
 
     address proxyAddress = 0x1E525EEAF261cA41b809884CBDE9DD9E1619573A;//rinkeby
     // address proxyAddress = 0xa5409ec958c83c3f309868babaca7c86dcb077c1;//mainnet
-    address private _signerAddress = 0x3A92e4F5D0eF0642A85c0772915C78380C7A1548;
-    address private _ranSignerAddress = 0x7138baD93bCF83AF06E152FBDbdF52F327808206;
+    address private _signerAddress = 0xb3857ebb2BB273e72adaB45B3417D1c111f3b21b;
+    address private _ranSignerAddress = 0x6813b289fA4BB595C6b851e55C9Ffe097f5F3E74;
 
     mapping(string => uint256) public wlConsumed;
     mapping(string => uint256) public ranConsumed;

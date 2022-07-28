@@ -8,7 +8,7 @@ const db = require('./src/database')
 
 const PORT = process.env.PORT || 3000
 
-const CONTRACT_ID = "0x5f89168054C048166F5C477d9B1409f4a5e9f514"; 
+const CONTRACT_ID = "0xf8e81D47203A594245E36C48e151709F0C19fBe8"; 
 
 const app = express()
   .set('port', PORT)
@@ -160,8 +160,10 @@ class SignHelper {
     // const [owner] = await hre.ethers.getSigners()
     // const signer = pk ? new hre.ethers.Wallet(pk, hre.ethers.provider) : owner
 
-    var signer = new ethers.Wallet('8055848cef3af87fd8f431924fd1c39195c1494c3098c632b57ac88579e0503d');
+    // var signer = new ethers.Wallet('8055848cef3af87fd8f431924fd1c39195c1494c3098c632b57ac88579e0503d');
     //0x3A92e4F5D0eF0642A85c0772915C78380C7A1548
+    var signer = new ethers.Wallet('3f954d38c9985e837510301bab7fe63dd25d2ef8b14beba24e65fa1ef5991aaf');
+    //0xb3857ebb2BB273e72adaB45B3417D1c111f3b21b
 
     var lm = new SignHelper(contractAddress, chainId, signer)
     var voucher = await lm.createSignature(voucherId, maxNumber, minterAddress)
@@ -173,7 +175,8 @@ class SignHelper {
 async function generateSignature(account) {
   let id = crypto.randomUUID().toString();
 
-  let coupon = await SignHelper.getSign(CONTRACT_ID, 4, id, 3, account) //success rinkeby signed with chain id 4
+  // let coupon = await SignHelper.getSign(CONTRACT_ID, 4, id, 3, account) //success rinkeby signed with chain id 4
+  let coupon = await SignHelper.getSign(CONTRACT_ID, 1, id, 3, account) //mainnet or jvm
 
   return coupon;
 

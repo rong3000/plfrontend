@@ -1,10 +1,16 @@
+change contract name
+use completely new account for publishing
 
 if mainnet need to change proxy
-wl 0x3A92e4F5D0eF0642A85c0772915C78380C7A1548
-ran 0x7138baD93bCF83AF06E152FBDbdF52F327808206
+// wl 0x3A92e4F5D0eF0642A85c0772915C78380C7A1548
+wl 0xb3857ebb2BB273e72adaB45B3417D1c111f3b21b
+// ran 0x7138baD93bCF83AF06E152FBDbdF52F327808206
+ran 0x6813b289fA4BB595C6b851e55C9Ffe097f5F3E74
 
 get contract address from remix
-0x884b778A1c48ab6EbBb51b383bCcAE1ae1A5E067
+// 0x884b778A1c48ab6EbBb51b383bCcAE1ae1A5E067
+0xd9145CCE52D386f254917e481eB44e9943F39138
+
 
 copy across pl1155.json into frontend folder
 copy across pl1155.json into rannumber folder
