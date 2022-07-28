@@ -15,8 +15,8 @@ copy across poos.json from remix into frontend folder
 copy across poos.json from remix into rannumber folder
 
 copy contract address into
-1. local_sign_only.js ; if mainnet need to change network id
-2. randomnumber/index.js; if mainnet need to change network id
+1. local_sign_only.js ; if mainnet need to change network id; sign_domain_name change to poos
+2. randomnumber/index.js; if mainnet need to change network id; sign_domain_name change to poos
 3. App.svelte; mainnet dealing
 
 need to update provider in randomnumber/index.js to mainnet
@@ -34,3 +34,5 @@ terminal psql
 
 DELETE FROM signednumber3;
 DELETE FROM wl;
+[important]
+change both backends' cors to poos.io

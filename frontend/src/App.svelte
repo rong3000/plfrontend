@@ -19,8 +19,8 @@
   let ownedTokens = [];
   let recentlyMintedTokens = [];
   let openseaContractLink =
-    "https://opensea.io/assets/" + CONTRACT_ID +"\/";//doublecheck on page 
-  let tokenSymbol = "PL";
+    "https://opensea.io/assets/ethereum/" + CONTRACT_ID +"\/";//doublecheck on page 
+  let tokenSymbol = "POOS";
   let childNFTs = {};
   let childNFTarray = new Set();
   let numberOfSelected;
@@ -352,7 +352,7 @@
   <a href="/">Poos</a>
   <ul>
     <li>
-      <a href="https://opensea.io/collection/poos">View on OpenSea</a>
+      <a href="https://opensea.io/collection/poos-io">View on OpenSea</a>
       <!-- to be updated after deployed -->
     </li>
   </ul>
@@ -372,7 +372,7 @@
 <main>
   {#if ethereum}
     {#if account}
-      <h1>Welcome to the Poo app</h1>
+      <h1>Welcome to the Poos app</h1>
       <h2>
         You have logged in as {account.slice(0, 4) +
           ".." +
@@ -477,7 +477,7 @@
         <section>Checking how many token you own...</section>
       {/if}
     {:else}
-      <h1>Welcome to the Poo app</h1>
+      <h1>Welcome to the Poos app</h1>
       <h2>Login with Metamask to mint, merge or split your NFT</h2>
       <button on:click={login}>Login</button>
 
@@ -515,12 +515,6 @@
 </main>
 
 <footer>
-  <a href="https://opensea.io/collection/poos">View on OpenSea</a>
-  <!-- to be updated after deployed -->
-  <!-- Built with <a href="https://pages.dev">Pages</a>
-  and <a href="https://workers.dev">Workers</a>, and open-source
-  <a href="https://github.com/cloudflare/cfweb3">on GitHub</a>.
-  <a href="https://blog.cloudflare.com/get-started-web3"
-    >Read the announcement blog post</a
-  >. -->
+  <a href="https://opensea.io/collection/poos-io">View on OpenSea</a>
+  <!-- to be updated after deployement -->
 </footer>
