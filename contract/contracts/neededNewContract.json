@@ -1,4 +1,4 @@
-change contract name
+change contract name to poos
 use completely new account for publishing
 
 if mainnet need to change proxy
@@ -8,17 +8,18 @@ wl 0xb3857ebb2BB273e72adaB45B3417D1c111f3b21b
 ran 0x6813b289fA4BB595C6b851e55C9Ffe097f5F3E74
 
 get contract address from remix
-// 0x884b778A1c48ab6EbBb51b383bCcAE1ae1A5E067
-0xd9145CCE52D386f254917e481eB44e9943F39138
+0x946C32Ac31Ea5660533d4c4d5c71cdbc7E9800f2
 
 
-copy across pl1155.json into frontend folder
-copy across pl1155.json into rannumber folder
+copy across poos.json from remix into frontend folder
+copy across poos.json from remix into rannumber folder
 
 copy contract address into
 1. local_sign_only.js ; if mainnet need to change network id
 2. randomnumber/index.js; if mainnet need to change network id
 3. App.svelte; mainnet dealing
+
+need to update provider in randomnumber/index.js to mainnet
 
 git push randomnumber
 

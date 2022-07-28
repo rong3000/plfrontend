@@ -4,7 +4,7 @@
   import Contract from "./poos.json";
   import { getOwned } from "./getOwned";
 
-  const CONTRACT_ID = "0x884b778A1c48ab6EbBb51b383bCcAE1ae1A5E067"; //to be changed after contract deployed
+  const CONTRACT_ID = "0x946C32Ac31Ea5660533d4c4d5c71cdbc7E9800f2"; //to be changed after contract deployed
   
   const ethereum = window.ethereum;
 
