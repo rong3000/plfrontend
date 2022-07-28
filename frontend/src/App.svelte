@@ -1,10 +1,9 @@
 <script>
   import { ethers } from "ethers";
   import { onMount } from "svelte";
-  import Contract from "./PL1155.json";
+  import Contract from "./poos.json";
   import { getOwned } from "./getOwned";
 
-  // const CONTRACT_ID = "0x8Ef0879e5bBcf5edf18B0C03D4DF858Ac07D3408"; //to be changed after contract deployed
   const CONTRACT_ID = "0x884b778A1c48ab6EbBb51b383bCcAE1ae1A5E067"; //to be changed after contract deployed
   
   const ethereum = window.ethereum;
@@ -17,11 +16,10 @@
   let minted = false;
   let loading = false;
   let errorCaught = false;
-  let bElementId = 1;
   let ownedTokens = [];
   let recentlyMintedTokens = [];
   let openseaContractLink =
-    "https://testnets.opensea.io/assets/" + CONTRACT_ID +"\/"; //to be changed after contract deployed
+    "https://opensea.io/assets/" + CONTRACT_ID +"\/";//doublecheck on page 
   let tokenSymbol = "PL";
   let childNFTs = {};
   let childNFTarray = new Set();
@@ -33,7 +31,6 @@
   };
   let wl = false;
   let wlminted = -1;
-  // let loadedNFTtotal = -1;
 
   function toggle(event) {
     childNFTs[event.currentTarget.id] = !childNFTs[event.currentTarget.id];
@@ -53,7 +50,7 @@
 
   onMount(() => {
     chain = ethereum.chainId;
-    account = ethereum.selectedAddress; //
+    account = ethereum.selectedAddress;
   });
 
   // If Metamask is installed
@@ -83,7 +80,7 @@
 
     if (account) {
       checkWhiteListed();
-      childNFTs = {}; //Clear selection
+      childNFTs = {};
       ownedTokens = [];
       findCurrentOwned();
       findCurrentMinted();
@@ -131,8 +128,8 @@
     contractWithSigner.on("Minted", (to, tokenId, amount, event) => {
       minted = true;
       loading = false;
-      alert("Minted tokenId is " + tokenId); //amount? need to change
-      childNFTs = {}; //Clear selection
+      alert("Minted tokenId is " + tokenId);
+      childNFTs = {};
       ownedTokens = [];
       findCurrentOwned();
       findWLminted();
@@ -172,8 +169,8 @@
     contractWithSigner.on("wlMinted", (to, tokenId, amount, event) => {
       minted = true;
       loading = false;
-      alert("WL Minted tokenId is " + tokenId); //amount? need to change
-      childNFTs = {}; //Clear selection
+      alert("WL Minted tokenId is " + tokenId);
+      childNFTs = {};
       ownedTokens = [];
       findCurrentOwned();
       findWLminted();
@@ -204,8 +201,8 @@
     contractWithSigner.on("Merged", (to, tokenId, amount, event) => {
       minted = true;
       loading = false;
-      alert("Merged tokenId is " + tokenId); //amount? need to change
-      childNFTs = {}; //Clear selection
+      alert("Merged tokenId is " + tokenId);
+      childNFTs = {};
       ownedTokens = [];
       findCurrentOwned();
       findCurrentMinted();
@@ -236,7 +233,7 @@
       minted = true;
       loading = false;
       alert("Selected merged item id " + id + " is now split.");
-      childNFTs = {}; //Clear selection
+      childNFTs = {};
       ownedTokens = [];
       findCurrentOwned();
       findCurrentMinted();
@@ -256,25 +253,15 @@
     loadedNFT.total = -1;
     childNFTarray.clear();
     let ownedToken = await getOwned(contract, account);
-    // loadedNFT.total = ownedToken.length;
     let intOwnedTokens = [];
-    // console.log("from getOwned is ", ownedToken);
 
     for (let i = 0; i < ownedToken.length; i++) {
       loadedNFT.loadedNFT = i + 1;
       loadedNFT.total = ownedToken.length;
-      // console.log('ownedToken ids are ', ownedToken[i].id);
 
       const URI = await contract.uri(ownedToken[i].id);
-      // console.log('uri is ', URI);
-      // console.log("ownedToken[i].id ", ownedToken[i].id);
-      // console.log("ownedToken[i].id Number", Number(ownedToken[i].id));
-      // console.log("ownedToken[i].id Number 16", Number(ownedToken[i].id).toString(16));
-      // console.log("ownedToken[i].id parseInt", parseInt(ownedToken[i].id));
-      // console.log("ownedToken[i].id.toString(16) ", parseInt(ownedToken[i].id).toString(16));
-      const mergedURI = URI.slice(0, -4) + ownedToken[i].id.toHexString(); //rewrite
+      const mergedURI = URI.slice(0, -4) + ownedToken[i].id.toHexString();//rewrite to replacing {id}
       
-      // console.log('mergeduri is ', mergedURI);
       let response;
       let fetchURI;
       try {
@@ -282,7 +269,7 @@
             mergedURI;
         response = await fetch(fetchURI);
       } catch (error) {
-        console.log(error); //alert or console
+        console.log(error);
       }
 
       const result = await response.json();
@@ -300,7 +287,6 @@
     } else {
       loadedNFT.total = -1;
     }
-    // loadedNFTtotal = -1;
   }
 
   async function findCurrentMinted() {
@@ -308,15 +294,12 @@
     const supply = await contract.getTokensetMinted();
 
     maxMints = Number(total);
-    // console.log('maxmints is ', maxMints);
     currentMinted = Number(supply);
-    // console.log('currentMinted is ', currentMinted);
-  } //rewrite or delete
+  }
 
   async function checkWhiteListed() {
 
     await fetch("https://rannumber.herokuapp.com/api/wl/" + account)
-      // await fetch("http://localhost:3000/api/wl/" + account)
       .then((response) => {
         let resText = response.json();
         return resText;
@@ -324,12 +307,9 @@
       .then((whitelist) => {
         wl = whitelist;
       });
-    // wl = signedInfo.find(
-    //   (item) => item.address.toLowerCase() === account.toLowerCase()
-    // );
         
     findWLminted();
-  } //rewrite or delete
+  }
 
   async function fetchRecentlyMinted() {
     let recentMintEvents = await contract.queryFilter({
@@ -337,31 +317,24 @@
         "0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62",
       ],
     });
-
-    // console.log("looking for selectedAddress 1 ", ethereum.selectedAddress); //
-    // if (ethereum.selectedAddress) {
-    //   window.location.reload();
-    // } //if
+    //double check what's the topic in mainnet
 
     recentMintEvents = recentMintEvents.slice(-3);
 
     await recentMintEvents.map(async (MintEvent) => {
       const token = MintEvent.args.id;
-      // console.log("token id is ", token); //
 
       const URI = await contract.uri(token);
 
       const mergedURI = URI.slice(0, -4) + parseInt(token).toString(16);
-      // console.log("URI is ", mergedURI); //
 
       let response;
       try {
         response = await fetch(
           mergedURI
         );
-        // response = await fetch(URI);
       } catch (error) {
-        console.log(error); //console or delete
+        console.log(error);
       }
 
       const result = await response.json();
@@ -376,26 +349,24 @@
 </script>
 
 <header>
-  <a href="/">Poo</a>
+  <a href="/">Poos</a>
   <ul>
     <li>
-      <a href="https://testnets.opensea.io/collection/cfnft">View on OpenSea</a>
+      <a href="https://opensea.io/collection/poos">View on OpenSea</a>
       <!-- to be updated after deployed -->
     </li>
   </ul>
 </header>
 
-{#if chain === "0x4"}
+{#if chain === "0x1"}
   <div class="warning">
-    This application is connected to the Rinkeby test network.
+    This application is connected to the Ethereum Mainnet.
   </div>
-  <!-- to be updated after deployed -->
-{:else if chain != "0x4"}
+{:else if chain != "0x1"}
   <div class="error">
-    This application requires you to be on the Rinkeby network. Use Metamask to
+    This application requires you to be on the Ethereum Mainnet. Use Metamask to
     switch networks.
   </div>
-  <!-- to be updated after deployed -->
 {/if}
 
 <main>
@@ -430,13 +401,6 @@
       {/if}
 
       <form on:submit|preventDefault={wlMint}>
-        <!-- <input
-          type="number"
-          min="0"
-          max="10000"
-          placeholder="Basic element id to mint"
-          bind:value={bElementId}
-        /> -->
         {#if wl && wl.number > 0}
           <button type="submit">Whitelist Mint</button>
         {:else}
@@ -445,21 +409,12 @@
       </form>
 
       <form on:submit|preventDefault={mint}>
-        <!-- <input
-          type="number"
-          min="0"
-          max="10000"
-          placeholder="Basic element id to mint"
-          bind:value={bElementId}
-        /> -->
-
         {#if currentMinted >= maxMints}
           <button disabled type="submit">Sold out</button>
         {:else}
           <button type="submit">Mint</button>
         {/if}
       </form>
-      <!-- need redo for new contract. Need to limit max per id, not limiting total -->
 
       <section>
         <span>{currentMinted} / {maxMints} minted</span>
@@ -467,7 +422,6 @@
 
       <h2>Your Tokens:</h2>
       {#if loadedNFT.total > 0}
-        <!-- {#if loadedNFTtotal > 0} -->
         You own {loadedNFT.total} different token ids, loading {loadedNFT.loadedNFT}...
       {/if}
       {#if ownedTokens.length > 0}
@@ -514,13 +468,11 @@
             {/each}
           </ul>
         </section>
-        <!-- {:else if loadedNFT.total = 0} -->
       {:else if ownedTokens.length == 0 && loadedNFT.total == -2}
         <section>
           You don't have any tokens. Mint one with the button above to add it to
           your collection.
         </section>
-        <!-- {:else if loadedNFT.total = -1} -->
       {:else if loadedNFT.total == -1}
         <section>Checking how many token you own...</section>
       {/if}
@@ -537,7 +489,7 @@
               <li>
                 <div class="grid-image">
                   <a
-                    href={`https://testnets.opensea.io/assets/0x290422ec6eadc2cc12acd98c50333720382ca86b/${token.id}`}
+                    href={`https://opensea.io/assets/ethereum/${CONTRACT_ID}/${token.id}`}
                   >
                     <!-- to be updated after deployed -->
                     <img src={token.image} alt={token.description} />
@@ -563,7 +515,7 @@
 </main>
 
 <footer>
-  <a href="https://testnets.opensea.io/collection/cfnft">View on OpenSea</a>
+  <a href="https://opensea.io/collection/poos">View on OpenSea</a>
   <!-- to be updated after deployed -->
   <!-- Built with <a href="https://pages.dev">Pages</a>
   and <a href="https://workers.dev">Workers</a>, and open-source
