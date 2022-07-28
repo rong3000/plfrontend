@@ -8,7 +8,7 @@ const db = require('./src/database')
 
 const PORT = process.env.PORT || 3000
 
-const CONTRACT_ID = "0xf8e81D47203A594245E36C48e151709F0C19fBe8"; 
+const CONTRACT_ID = "0x946C32Ac31Ea5660533d4c4d5c71cdbc7E9800f2"; 
 
 const app = express()
   .set('port', PORT)
@@ -117,7 +117,7 @@ const addresses = require('./addresses.json');
 // const pk = process.env.ACCOUNT_PRIVATE_KEY
 // console.log('pk is', pk);
 
-const SIGNING_DOMAIN_NAME = "PL"
+const SIGNING_DOMAIN_NAME = "POOS"
 const SIGNING_DOMAIN_VERSION = "1"
 
 class SignHelper {

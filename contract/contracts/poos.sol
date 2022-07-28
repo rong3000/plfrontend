@@ -58,7 +58,7 @@ contract POOS is
     string private constant SIGNING_DOMAIN = "POOS";
     string private constant SIGNATURE_VERSION = "1";
 
-    address proxyAddress = 0xa5409ec958c83c3f309868babaca7c86dcb077c1;
+    address proxyAddress = 0xa5409ec958C83C3f309868babACA7c86DCB077c1;
     address private _signerAddress = 0xb3857ebb2BB273e72adaB45B3417D1c111f3b21b;
     address private _ranSignerAddress = 0x6813b289fA4BB595C6b851e55C9Ffe097f5F3E74;
 
