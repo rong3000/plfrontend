@@ -42,7 +42,7 @@ const pool = new Pool({
 
 app.get('/api/wl/:account', function (req, res) {
 
-  const _acc = req.params.account.toString()
+  let _acc = req.params.account.toString()
   console.log("valide address? ", ethers.utils.isAddress(_acc));
 
   var max = 11;
@@ -50,6 +50,7 @@ app.get('/api/wl/:account', function (req, res) {
 
   //assync
   if (ethers.utils.isAddress(_acc)) {
+    _acc = ethers.utils.getAddress( _acc );
     let queryText = "SELECT * FROM wl WHERE ADDRESS = " + "\'" + _acc.toString() + "\'";
     console.log("query text is ", queryText);
     pool.connect((err, client, done) => {

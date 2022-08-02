@@ -31,6 +31,7 @@
   };
   let wl = false;
   let wlminted = -1;
+  let hasSaleStarted = false;
 
   function toggle(event) {
     childNFTs[event.currentTarget.id] = !childNFTs[event.currentTarget.id];
@@ -84,6 +85,7 @@
       ownedTokens = [];
       findCurrentOwned();
       findCurrentMinted();
+      checkHasSaleStarted();
     } else {
       fetchRecentlyMinted();
     }
@@ -238,6 +240,15 @@
       findCurrentOwned();
       findCurrentMinted();
     });
+  }
+
+  
+
+  async function checkHasSaleStarted() {
+    
+    const hasSaleStartedPromise = await contract.getHasSaleStarted();
+
+    hasSaleStarted = hasSaleStartedPromise;
   }
 
   async function findWLminted() {
@@ -412,7 +423,11 @@
         {#if currentMinted >= maxMints}
           <button disabled type="submit">Sold out</button>
         {:else}
-          <button type="submit">Mint</button>
+          {#if hasSaleStarted}
+            <button type="submit">Mint</button>
+          {:else}
+            <button disabled type="submit">Public Sales not started</button>
+          {/if}
         {/if}
       </form>
 
