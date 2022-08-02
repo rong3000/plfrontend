@@ -426,7 +426,7 @@
           {#if hasSaleStarted}
             <button type="submit">Mint</button>
           {:else}
-            <button disabled type="submit">Public Sales not started</button>
+            <button disabled type="submit">Public sales not started</button>
           {/if}
         {/if}
       </form>
