@@ -1,20 +1,20 @@
-# CFWeb3
+# Web3
 
-CFWeb3 is a Web3 demo application. It uses [Hardhat](https://github.com/nomiclabs/hardhat) and [Solidity](https://soliditylang.org/) to create an [Ethereum](https://ethereum.org/) smart contract. This code is a proof-of-concept showing how to [build Web3 applications with Cloudflare](https://blog.cloudflare.com/get-started-web3/), and should not be used as a production example.
+This is a Web3 application. It uses [Svelte](https://svelte.dev/) as web frontend. It uses [Hardhat](https://github.com/nomiclabs/hardhat) and [Solidity](https://soliditylang.org/) to create an [Ethereum](https://ethereum.org/) smart contract.
 
-The contract offers 2048 tokens which can be minted via the frontend [Svelte](https://svelte.dev/) application. The entire app runs on the [Rinkeby](https://www.rinkeby.io/) test network.
+The contract offers tokens which can be minted via the frontend [Svelte](https://svelte.dev/) application. The entire app runs on Ethereum main network as well as the [Rinkeby](https://www.rinkeby.io/) test network.
 
-## Demo
+## erc1155.online
 
-A live version of this demo app can be found at [cf-web3.pages.dev](https://cf-web3.pages.dev/).
+Frontend app can be found at [erc1155.online](https://erc1155.online/).
 
 ## Building locally
 
-1. Clone the repo with `git clone git@github.com:cloudflare/cfweb3.git`
+1. Clone the repo
 2. npm install in `contract` and `frontend` with:
 
 ```sh
-cd cfweb3/contract
+cd contract
 npm install
 cd ../frontend
 npm install
